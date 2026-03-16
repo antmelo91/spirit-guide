@@ -1,0 +1,1909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spirit Guide">
+<title>Spirit Guide</title>
+<meta name="theme-color" content="#0a0804">
+<link rel="apple-touch-icon" href="icon.png">>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0804;--surface:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.07);
+  --text:#f0e6d3;--muted:#7a6548;--gold:#c47a2a;--accent:#c47a2a;--accent-light:#e8a24e;
+  --dim:#130e06;--card-hover:rgba(196,122,42,0.1)
+}
+html,body{min-height:100%;font-family:'DM Sans',sans-serif;font-weight:300;color:var(--text);overflow-x:hidden}
+body{background:var(--bg);padding-bottom:80px}
+/* Noise texture overlay */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:2;opacity:1}
+/* Deep atmospheric background */
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:80px;
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 0%,#1a0e02 0%,transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 100%,#120800 0%,transparent 55%),
+    radial-gradient(ellipse 40% 60% at 50% 50%,#1a1005 0%,transparent 70%),
+    #0a0804;
+  pointer-events:none;z-index:0}
+#app{position:relative;z-index:1;isolation:auto}
+button,input,textarea{font-family:'DM Sans',sans-serif}
+.nav{display:flex;align-items:flex-end;justify-content:space-between;padding:54px 20px 0;border-bottom:none;position:relative;margin-bottom:0}
+.nav-inner{flex:1}
+.nav-eyebrow{font-size:8px;letter-spacing:7px;color:var(--accent-light);text-transform:uppercase;margin-bottom:6px;font-family:'DM Sans',sans-serif;font-weight:400}
+.nav-logo{font-family:'Playfair Display',serif;font-size:34px;font-weight:400;font-style:italic;letter-spacing:1px;background:linear-gradient(135deg,#f0e6d3 0%,var(--accent-light) 50%,#c47a2a 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:2px}
+.nav-rule{height:1px;background:linear-gradient(90deg,var(--accent) 0%,rgba(196,122,42,0.3) 60%,transparent 100%);margin:10px 0 0;width:100%}
+.nav-right{display:flex;gap:8px;padding-bottom:4px}
+.icon-btn{width:36px;height:36px;border-radius:8px;background:rgba(196,122,42,0.1);border:1px solid rgba(196,122,42,0.25);color:var(--accent-light);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.icon-btn.on{background:var(--gold);border-color:var(--accent);color:#e8ede9}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:9999;isolation:isolate;pointer-events:all;background:#090703 !important;border-top:1px solid rgba(196,122,42,0.2);display:flex;padding-bottom:env(safe-area-inset-bottom,6px);overflow-x:auto;scrollbar-width:none;box-shadow:0 -1px 40px rgba(0,0,0,0.95)}
+.bottom-nav::-webkit-scrollbar{display:none}
+.bnav-btn{position:relative;z-index:9999;flex:0 0 auto;min-width:58px;padding:9px 5px 7px;cursor:pointer;border:none;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;transition:color .2s;font-size:8px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
+.bnav-btn.on{color:var(--accent-light)}
+.bnav-icon{font-size:16px;line-height:1}
+.page{display:none;padding:16px 15px 20px;max-width:900px;margin:0 auto;animation:fadeUp .22s ease;position:relative;z-index:1}
+.page.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.sh{font-size:8px;letter-spacing:5px;color:var(--accent);text-transform:uppercase;margin-bottom:11px;font-weight:500}
+.sh-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.chips{display:flex;gap:5px;overflow-x:auto;margin-bottom:13px;padding-bottom:3px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:5px 14px;border-radius:4px;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;border:1px solid rgba(196,122,42,0.2);background:transparent;color:var(--muted);transition:all .15s;white-space:nowrap;font-family:"DM Sans",sans-serif}
+.chip.on{background:rgba(196,122,42,0.25);border-color:var(--accent);color:var(--accent-light);font-weight:500}
+.recipe-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-bottom:16px}
+.rcard{background:rgba(18,12,4,0.8);border:1px solid rgba(196,122,42,0.15);border-radius:6px;padding:15px 14px 12px;cursor:pointer;text-align:left;color:var(--text);transition:all .22s;width:100%;position:relative;overflow:hidden}
+.rcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent-light),transparent);opacity:0;transition:opacity .2s}
+.rcard:hover::before,.rcard.active::before{opacity:1}
+.rcard:hover{background:var(--card-hover);border-color:rgba(196,122,42,0.4)}
+.rcard-dot{width:5px;height:5px;border-radius:50%;margin-bottom:9px}
+.rcard-name{font-size:15px;font-weight:400;margin-bottom:3px;font-family:'Playfair Display',serif;letter-spacing:.2px;line-height:1.25}
+.rcard-cat{font-size:9px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:2px}
+.rcard-foot{display:flex;justify-content:space-between;align-items:center}
+.badge{font-size:7px;padding:2px 7px;border-radius:3px;letter-spacing:1.5px;text-transform:uppercase;display:inline-block;font-weight:500}
+.detail{background:rgba(18,12,4,0.9);border-radius:6px;overflow:hidden;border:1px solid rgba(196,122,42,0.2);margin-bottom:18px;animation:fadeUp .22s ease;box-shadow:0 8px 40px rgba(0,0,0,0.5)}
+.detail-top{padding:17px 15px 13px;display:flex;justify-content:space-between;align-items:flex-start;gap:9px}
+.detail-cat{font-size:8px;letter-spacing:5px;text-transform:uppercase;margin-bottom:4px}
+.detail-name{font-family:'Playfair Display',serif;font-size:27px;font-weight:400;font-style:italic;letter-spacing:.3px;margin-bottom:3px;line-height:1.1}
+.detail-desc{font-size:12px;color:#9ca3af;font-style:italic;margin-bottom:7px}
+.detail-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.steps{padding:0 15px 13px}
+.step-row{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+.step-num{width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-text{font-size:13px;line-height:1.7;color:#b8c8bc;padding-top:2px}
+.ing-list{padding:0 15px 11px}
+.ing-row{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;background:rgba(18,12,4,0.6);border-radius:4px;margin-bottom:4px;border:1px solid rgba(196,122,42,0.1)}
+.ing-l{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ing-amt{font-weight:500;font-size:13px;text-align:right}
+.ing-per{font-size:10px;color:var(--muted)}
+.batch-s{margin:0 15px 11px;padding:11px 12px;background:rgba(18,12,4,0.5);border-radius:4px;border:1px solid rgba(196,122,42,0.1)}
+.srv-row{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-top:7px}
+.srv-btn{width:33px;height:33px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;flex-shrink:0}
+.timer-ring{position:relative;width:56px;height:56px}
+.timer-inner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:600}
+.timer-lbl{font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;text-align:center}
+.divider{border:none;border-top:1px solid var(--border)}
+.two-col{display:grid;grid-template-columns:1fr 1fr}
+.tcell{padding:11px 15px}
+.tcell:first-child{border-right:1px solid var(--border)}
+.tcell-label{font-size:7px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:5px;font-weight:500}
+.tcell-text{font-size:12px;line-height:1.6;color:#d4cfc6}
+.shop-box{margin:0 15px 11px;padding:11px;background:rgba(196,122,42,0.08);border:1px solid rgba(196,122,42,0.3);border-radius:4px}
+.log-s{padding:11px 15px;border-top:1px solid var(--border)}
+.log-entry{padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.log-entry:last-child{border:none}
+.log-note{font-size:11px;color:#9ca3af;font-style:italic;line-height:1.5;margin-top:2px}
+textarea{background:rgba(18,12,4,0.8);border:1px solid rgba(196,122,42,0.2);border-radius:4px;padding:8px 10px;color:var(--text);font-size:12px;resize:none;outline:none;width:100%}
+.bar-grid{display:flex;flex-direction:column;gap:4px;margin-bottom:16px}
+.bar-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:4px;cursor:pointer;color:var(--text);text-align:left;transition:all .15s;width:100%;border:1px solid rgba(196,122,42,0.12);background:rgba(18,12,4,0.5)}
+.mkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px}
+.mkcard{border-radius:5px;padding:13px;cursor:pointer;text-align:left;color:var(--text);width:100%;border:1px solid transparent;transition:all .2s}
+.cust-wrap{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.name-inp{background:rgba(18,12,4,0.8);border:1px solid rgba(196,122,42,0.25);border-radius:4px;padding:8px 10px;color:var(--text);font-size:14px;width:100%;outline:none;margin-top:4px}
+.qty-row{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;background:rgba(18,12,4,0.6);border-radius:4px;margin-bottom:4px;border:1px solid rgba(196,122,42,0.1)}
+.qty-ctrl{display:flex;align-items:center;gap:5px}
+.qty-btn{width:25px;height:25px;border-radius:50%;background:rgba(255,255,255,0.09);border:none;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.qty-val{font-weight:500;font-size:13px;color:var(--gold);min-width:34px;text-align:center}
+.save-btn{width:100%;padding:10px;border-radius:8px;font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;border:none;margin-top:5px}
+.empty{text-align:center;padding:24px 11px;color:var(--muted);font-style:italic;font-size:12px;border:1px dashed rgba(255,255,255,0.08);border-radius:10px;line-height:1.5;margin-bottom:7px}
+.swrap{position:relative;margin-bottom:11px}
+.sinput{width:100%;padding:10px 12px 10px 35px;background:rgba(18,12,4,0.8);border:1px solid rgba(196,122,42,0.2);border-radius:5px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}.sinput:focus{border-color:var(--accent)}
+.sicon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;pointer-events:none}
+.saved-card{display:flex;justify-content:space-between;align-items:center;padding:13px;background:rgba(18,12,4,0.7);border-radius:5px;margin-bottom:8px;border:1px solid rgba(196,122,42,0.15);transition:all .2s}
+button{-webkit-tap-highlight-color:rgba(0,0,0,0);touch-action:manipulation;cursor:pointer;}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(196,122,42,0.3);border-radius:2px}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="nav">
+  <div class="nav-inner">
+    <div class="nav-eyebrow">Anthony's Bar Cart</div>
+    <div class="nav-logo">Spirit Guide</div>
+    <div class="nav-rule"></div>
+  </div>
+  <div class="nav-right">
+    <button class="icon-btn" id="surpriseBtn">🎲</button>
+  </div>
+</div>
+
+<div class="page on" id="page-discover">
+  <div id="cotdPanel" style="margin-bottom:16px"></div>
+  <div class="swrap"><span class="sicon">🔍</span><input class="sinput" id="searchInput" placeholder="Search by name, spirit, or ingredient..." oninput="filterSearch()"></div>
+  <div class="chips" id="catChips"></div>
+  <div style="display:flex;gap:6px;margin:8px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px" id="diffChips">
+    <button class="chip on" onclick="setDiscDiff(0)" style="white-space:nowrap;flex-shrink:0">All Levels</button>
+    <button class="chip" onclick="setDiscDiff(1)" style="white-space:nowrap;flex-shrink:0">⭐ Easy</button>
+    <button class="chip" onclick="setDiscDiff(2)" style="white-space:nowrap;flex-shrink:0">⭐⭐ Medium</button>
+    <button class="chip" onclick="setDiscDiff(3)" style="white-space:nowrap;flex-shrink:0">⭐⭐⭐ Complex</button>
+  </div>
+  <div id="recentSection" style="margin-bottom:14px"></div>
+  <div class="recipe-grid" id="discoverGrid"></div>
+  <div id="discoverDetail"></div>
+</div>
+<div class="page" id="page-spirits">
+  <div class="swrap" style="margin-bottom:10px"><span class="sicon">🔍</span><input class="sinput" id="spiritSearchInput" placeholder="Search by name or ingredient..." oninput="filterSpiritSearch()"></div>
+  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px" id="spiritTabBtns">
+    <button class="chip on" data-spirit="all" onclick="setSpiritTab('all')">All Spirits</button>
+    <button class="chip" data-spirit="Gin" onclick="setSpiritTab('Gin')">🌿 Gin</button>
+    <button class="chip" data-spirit="Tequila" onclick="setSpiritTab('Tequila')">🌵 Tequila</button>
+    <button class="chip" data-spirit="Vodka" onclick="setSpiritTab('Vodka')">❄️ Vodka</button>
+    <button class="chip" data-spirit="Whiskey" onclick="setSpiritTab('Whiskey')">🥃 Whiskey</button>
+    <button class="chip" data-spirit="Rum" onclick="setSpiritTab('Rum')">🏝️ Rum</button>
+    <button class="chip" data-spirit="Brandy" onclick="setSpiritTab('Brandy')">🍷 Brandy</button>
+    <button class="chip" data-spirit="Sake" onclick="setSpiritTab('Sake')">🍶 Sake</button>
+  </div>
+  <div class="chips" id="spiritCatChips"></div>
+  <div class="recipe-grid" id="spiritsGrid"></div>
+  <div id="spiritsDetail"></div>
+</div><div class="page" id="page-bar">
+  <div class="sh-row" style="align-items:center">
+    <div style="flex:1">
+      <div class="sh" style="margin:0">My Bar</div>
+      <span id="barCount" style="font-size:10px;color:var(--muted)"></span>
+    </div>
+    <button onclick="document.getElementById('mkSection').scrollIntoView({behavior:'smooth',block:'start'})" style="background:rgba(196,122,42,0.15);border:1px solid rgba(196,122,42,0.3);border-radius:4px;color:var(--accent-light);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:7px 12px;cursor:pointer;white-space:nowrap">Make Tonight ↓</button>
+  </div>
+  <div class="swrap" style="margin-bottom:10px"><span class="sicon">🔍</span><input class="sinput" id="barSearch" placeholder="Filter ingredients..." oninput="renderBar()"></div>
+  <div id="addIngPanel" style="margin-bottom:12px">
+    <div style="display:flex;gap:7px;align-items:center">
+      <input id="newIngName" class="sinput" style="flex:1;padding:9px 12px" placeholder="Add custom ingredient..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomIng();}">
+      <select id="newIngType" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:9px 10px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;-webkit-appearance:none;appearance:none;min-width:90px">
+        <option value="spirit">Spirit</option>
+        <option value="liqueur">Liqueur</option>
+        <option value="syrup">Syrup</option>
+        <option value="juice">Juice</option>
+        <option value="mixer">Mixer</option>
+        <option value="bitters">Bitters</option>
+        <option value="vermouth">Vermouth</option>
+        <option value="cream">Cream</option>
+        <option value="other">Other</option>
+      </select>
+      <button id="addIngBtn" onclick="addCustomIng()" style="background:var(--gold);border:none;border-radius:10px;color:#f0e6d3;font-size:11px;font-weight:500;letter-spacing:1px;padding:9px 14px;white-space:nowrap;cursor:pointer">+ Add</button>
+    </div>
+  </div>
+  <div class="bar-grid" id="barGrid"></div><div id="mkSection" class="sh-row" style="margin-top:3px"><div class="sh" style="margin:0">Can Make Tonight</div><span id="mkCount" style="font-size:10px;color:var(--accent-light)"></span></div><div class="mkgrid" id="mkGrid"></div></div>
+<div class="page" id="page-generator">
+  <div class="sh-row"><div class="sh" style="margin:0">Bar Generator</div></div>
+  <div id="genPanel"></div>
+</div>
+<div class="page" id="page-saved">
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <button class="chip on" id="savedTabRecipes" onclick="setSavedTab('recipes')">My Recipes</button>
+    <button class="chip" id="savedTabParty" onclick="setSavedTab('party')">🎉 Party Planner</button>
+    <button class="chip" id="savedTabShop" onclick="setSavedTab('shop')">🛒 Shop</button>
+    <button class="chip" id="savedTabGlossary" onclick="setSavedTab('glossary')">📖 Techniques</button>
+  </div>
+  <div id="savedList"></div>
+  <div id="partyPlanner" style="display:none"></div>
+  <div id="glossaryPanel" style="display:none"></div>
+</div>
+
+</div>
+<div class="bottom-nav">
+  <button class="bnav-btn on"  data-page="discover"><span class="bnav-icon">🍸</span>All</button>
+  <button class="bnav-btn"     data-page="spirits"><span class="bnav-icon">🍾</span>Spirits</button>
+  <button class="bnav-btn"     data-page="bar"><span class="bnav-icon">🧊</span>My Bar</button>
+  <button class="bnav-btn"     data-page="generator"><span class="bnav-icon">🪄</span>Generate</button>
+  <button class="bnav-btn"     data-page="saved"><span class="bnav-icon">📖</span>Saved</button>
+</div>
+
+<script>
+// ── LOOKUPS ──────────────────────────────────────────────────
+const TC={spirit:"#94a3b8",liqueur:"#a78bfa",coffee:"#a16207",syrup:"#c084fc",cream:"#fbbf24",juice:"#6ee7b7",bitters:"#f87171",vermouth:"#86efac",mixer:"#67e8f9",other:"#e5e7eb"};
+const TL={spirit:"Spirit",liqueur:"Liqueur",coffee:"Coffee",syrup:"Syrup",cream:"Cream",juice:"Juice",bitters:"Bitters",vermouth:"Vermouth",mixer:"Mixer",other:"Other"};
+const FR={0.25:"¼",0.33:"⅓",0.5:"½",0.67:"⅔",0.75:"¾"};
+function oz(n){const w=Math.floor(n),f=Math.round((n-w)*100)/100,fs=FR[f]||(f>0?parseFloat(f.toFixed(2)):"");return w===0?(fs||n)+" oz":(!fs?w+" oz":w+" "+fs+" oz");}
+function strs(r,z=12){return[1,2,3,4,5].map(s=>`<span style="color:${s<=r?"#f59e0b":"#2d2d2d"};font-size:${z}px">★</span>`).join("");}
+const DC={1:"#c47a2a",2:"#e8a24e",3:"#ef4444"};const DL={1:"Easy",2:"Medium",3:"Advanced"};
+// ── ABV LOOKUP ───────────────────────────────────────────────
+const ABV={
+  spirit:{gin:40,vodka:40,bourbon:45,rye:45,whiskey:43,scotch:43,rum:40,tequila:40,mezcal:40,cognac:40,brandy:40,pisco:42,calvados:40,sake:15,default:40},
+  liqueur:{campari:25,aperol:11,cointreau:40,kahlúa:20,'tia maria':20,'mr. black':23,chartreuse:55,'crème de':20,amaretto:25,limoncello:28,bénédictine:40,maraschino:32,cynar:16,'st-germain':20,elderflower:20,licor:31,mozart:15,default:20},
+  vermouth:{sweet:16,dry:18,default:17},
+  wine:13,beer:5,default:0
+};
+
+function getABV(ingName,ingType){
+  const n=ingName.toLowerCase();
+  if(ingType==='spirit'){
+    for(const[k,v] of Object.entries(ABV.spirit)){if(n.includes(k))return v;}
+    return ABV.spirit.default;
+  }
+  if(ingType==='liqueur'){
+    for(const[k,v] of Object.entries(ABV.liqueur)){if(n.includes(k))return v;}
+    return ABV.liqueur.default;
+  }
+  if(ingType==='vermouth'){
+    for(const[k,v] of Object.entries(ABV.vermouth)){if(n.includes(k))return v;}
+    return ABV.vermouth.default;
+  }
+  return 0;
+}
+
+function calcABV(recipe, servings){
+  const s=servings||1;
+  let alcoholOz=0, totalOz=0;
+  recipe.i.forEach(ing=>{
+    const amt=(ing.a||0)*s;
+    const abv=getABV(ing.n,ing.t)/100;
+    alcoholOz+=amt*abv;
+    totalOz+=amt;
+  });
+  if(!totalOz)return null;
+  // Dilution from shaking/stirring (~20-25%)
+  const diluted=totalOz*(recipe.shake>0?1.2:1.15);
+  return Math.round((alcoholOz/diluted)*100);
+}
+
+
+// ── SUBSTITUTIONS ────────────────────────────────────────────
+const SUBS={
+  // Citrus
+  'Fresh Lemon Juice':['Fresh Lime Juice'],
+  'Fresh Lime Juice':['Fresh Lemon Juice'],
+  'Fresh Lemon Juice':['Fresh Lime Juice','Fresh Lemon Juice'],
+  'Fresh Lime Juice':['Fresh Lemon Juice','Fresh Lime Juice'],
+  // Orange liqueur
+  'Cointreau':['Triple Sec','Grand Marnier','Curaçao'],
+  'Triple Sec':['Cointreau','Grand Marnier'],
+  'Grand Marnier':['Cointreau','Triple Sec'],
+  // Vermouth
+  'Sweet Vermouth':['Carpano Antica','Punt e Mes'],
+  'Dry Vermouth':['Lillet Blanc'],
+  'Lillet Blanc':['Dry Vermouth'],
+  // Sweeteners
+  'Simple Syrup':['Honey Syrup','Agave Syrup','Sugar Syrup'],
+  'Honey Syrup':['Simple Syrup','Agave Syrup'],
+  'Agave Syrup':['Simple Syrup','Honey Syrup'],
+  'Demerara Syrup':['Simple Syrup','Brown Sugar Syrup'],
+  // Coffee / chocolate
+  'Espresso':['Strong Coffee','Cold Brew'],
+  'Cold Brew':['Espresso','Strong Coffee'],
+  'Kahlúa':['Tia Maria','Mr. Black'],
+  'Tia Maria':['Kahlúa','Mr. Black'],
+  'Mr. Black':['Kahlúa','Tia Maria'],
+  'Crème de Cacao':['Mozart White Chocolate'],
+  'Mozart White Chocolate':['Crème de Cacao','White Chocolate Liqueur'],
+  // Cream / dairy
+  'Heavy Cream':['Half and Half','Coconut Cream'],
+  'Half and Half':['Heavy Cream'],
+  'Coconut Cream':['Heavy Cream','Coconut Milk'],
+  // Bitters
+  'Angostura Bitters':['Fee Brothers Aromatic Bitters'],
+  'Orange Bitters':['Angostura Orange Bitters'],
+  // Sparkling
+  'Champagne':['Prosecco','Cava','Sparkling Wine'],
+  'Prosecco':['Champagne','Cava','Sparkling Wine'],
+  'Soda Water':['Soda Water','Soda Water'],
+  'Soda Water':['Soda Water','Soda Water'],
+  // Other spirits
+  'Mezcal':['Tequila'],
+  'Bourbon':['Rye Whiskey'],
+  'Rye Whiskey':['Bourbon'],
+  'Cognac':['Brandy','Armagnac'],
+  'Brandy':['Cognac'],
+  'Pisco':['Brandy'],
+  // Liqueurs
+  'Amaretto':['Disaronno'],
+  'Aperol':['Campari'],
+  'Campari':['Aperol'],
+  'St-Germain':['Elderflower Liqueur','Elderflower Cordial'],
+  'Elderflower Liqueur':['St-Germain'],
+  'Licor 43':['Vanilla Liqueur'],
+  'Crème de Violette':['Crème de Mure','Parfait Amour'],
+  'Lavender Syrup':['Simple Syrup'],
+  // Misc
+  'Egg White':['Aquafaba'],
+  'Aquafaba':['Egg White'],
+  'Maraschino Liqueur':['Luxardo Cherry Liqueur'],
+};
+function getSub(name){
+  // Exact match first
+  if(SUBS[name])return SUBS[name];
+  // Case-insensitive partial match
+  const nl=name.toLowerCase();
+  for(const k of Object.keys(SUBS)){
+    if(k.toLowerCase()===nl||nl.includes(k.toLowerCase())||k.toLowerCase().includes(nl))return SUBS[k];
+  }
+  return null;
+}
+
+const SC={Gin:"#e8a24e",Tequila:"#d4843a",Vodka:"#c4b896",Whiskey:"#c47a2a",Rum:"#b85e2a",Sake:"#a8c4a0",Brandy:"#c47a2a","Espresso Martini":"#8b6244",Negroni:"#c45238",Sour:"#c4a83a",Classic:"#c48a3a",Highball:"#8ab4c4",Stirred:"#9478a8",Tropical:"#c4a050",Punch:"#a85878",Aperitivo:"#c4723a",Custom:"#c45878"};
+const SPAGES={gin:"Gin",tequila:"Tequila",vodka:"Vodka",whiskey:"Whiskey",rum:"Rum",brandy:"Brandy"};
+
+// ── RECIPES ──────────────────────────────────────────────────
+const R=[
+// ── GIN ─────────────────────────────────────────────────────
+{id:1,base:"Gin",cat:"Negroni",name:"Negroni",desc:"Equal parts. The perfect bitter aperitivo.",rating:5,diff:1,shake:30,
+ i:[{n:"Gin",a:1,t:"spirit"},{n:"Campari",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"}],
+ steps:["Fill a mixing glass with ice.","Add gin, Campari, and sweet vermouth — 1 oz each.","Stir 30 seconds. Never shake — stirring keeps it silky and clear.","Strain over a large rock in a rocks glass.","Express orange peel skin-down over the surface, rim the glass, drop it in."],
+ garnish:"Expressed orange peel",tip:"Carpano Antica Formula is the gold-standard vermouth. Use 1.25 oz gin for a more spirit-forward build."},
+
+{id:2,base:"Whiskey",cat:"Stirred",name:"Boulevardier",desc:"Bourbon replaces gin — warmer, richer, equally great",rating:5,diff:1,shake:30,
+ i:[{n:"Bourbon",a:1.5,t:"spirit"},{n:"Campari",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"}],
+ steps:["Fill mixing glass with ice.","Add bourbon, Campari, and vermouth.","Stir 30 seconds.","Strain over a large rock.","Garnish with orange peel or Luxardo cherry."],
+ garnish:"Orange peel or Luxardo cherry",tip:"Buffalo Trace or Bulleit are ideal. The bourbon's caramel and vanilla play beautifully against Campari's bitterness."},
+
+{id:3,base:"Gin",cat:"Aperitivo",name:"Negroni Sbagliato",desc:"Prosecco replaces gin — festive, lighter, lower ABV",rating:4,diff:1,shake:0,
+ i:[{n:"Prosecco",a:2,t:"mixer"},{n:"Campari",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"}],
+ steps:["Fill a rocks or wine glass with ice.","Add Campari and sweet vermouth.","Top gently with Prosecco — pour slowly to keep the bubbles.","One gentle stir. Garnish with an orange slice."],
+ garnish:"Orange slice",tip:"'Sbagliato' means mistake — a bartender grabbed Prosecco instead of gin and accidentally invented a classic. Perfect for brunch or day drinking."},
+
+{id:4,base:"Gin",cat:"Negroni",name:"White Negroni",desc:"Pale, floral, softer bitterness — stunning in a coupe",rating:4,diff:1,shake:30,
+ i:[{n:"Gin",a:1.5,t:"spirit"},{n:"Lillet Blanc",a:1,t:"vermouth"},{n:"Suze",a:0.75,t:"liqueur"}],
+ steps:["Fill mixing glass with ice.","Add gin, Lillet Blanc, and Suze.","Stir 30 seconds.","Strain into a coupe or rocks glass.","Garnish with a lemon twist."],
+ garnish:"Lemon twist",tip:"Suze is a French gentian liqueur — bitter and floral. Together with Lillet it creates a pale golden drink far lighter than the classic Negroni."},
+
+{id:5,base:"Tequila",cat:"Stirred",name:"Mezcal Negroni",desc:"Smoky agave replaces gin — complex and bold",rating:5,diff:1,shake:30,
+ i:[{n:"Mezcal",a:1,t:"spirit"},{n:"Campari",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"}],
+ steps:["Fill mixing glass with ice.","Add mezcal, Campari, and vermouth.","Stir 30 seconds.","Strain over a large rock.","Garnish with an orange peel."],
+ garnish:"Orange peel",tip:"The smokiness of mezcal transforms the Negroni completely. Use a lightly smoked mezcal (Del Maguey Vida) — too much smoke overwhelms the Campari."},
+
+{id:6,base:"Tequila",cat:"Stirred",name:"Rosita",desc:"Tequila Negroni — agave-forward, elegant, split vermouth",rating:4,diff:1,shake:30,
+ i:[{n:"Tequila Reposado",a:1.5,t:"spirit"},{n:"Campari",a:0.5,t:"liqueur"},{n:"Sweet Vermouth",a:0.5,t:"vermouth"},{n:"Dry Vermouth",a:0.5,t:"vermouth"}],
+ steps:["Fill mixing glass with ice.","Add all ingredients.","Stir 30 seconds.","Strain into a rocks glass over ice.","Express orange peel and drop in."],
+ garnish:"Orange peel",tip:"Reposado tequila adds oak and agave complexity. The split vermouth provides both sweetness and herbal dryness simultaneously."},
+
+{id:7,base:"Rum",cat:"Stirred",name:"Kingston Negroni",desc:"Rum Negroni — tropical and funky",rating:4,diff:1,shake:30,
+ i:[{n:"Aged Rum",a:1,t:"spirit"},{n:"Campari",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"}],
+ steps:["Fill mixing glass with ice.","Add rum, Campari, and vermouth.","Stir 30 seconds.","Strain over a large rock.","Garnish with orange peel."],
+ garnish:"Orange peel",tip:"Use a funky Jamaican rum like Appleton Estate. The molasses and fruit notes play brilliantly with bitter Campari."},
+
+{id:8,base:"Tequila",cat:"Stirred",name:"Naked & Famous",desc:"Equal parts mezcal riff — smoky, tart, herbal, perfect",rating:5,diff:1,shake:15,
+ i:[{n:"Mezcal",a:0.75,t:"spirit"},{n:"Aperol",a:0.75,t:"liqueur"},{n:"Yellow Chartreuse",a:0.75,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"}],
+ steps:["Combine all equal-part ingredients in a shaker with ice.","Shake hard 15 seconds.","Double strain into a chilled coupe."],
+ garnish:"None",tip:"A modern classic from Death & Co. Smoke, citrus, sweetness, and herbal complexity in perfect balance. One of the best cocktails invented in the 21st century."},
+
+{id:9,base:"Gin",cat:"Classic",name:"The Last Word",desc:"Equal parts gin classic — herbal, tart, perfectly balanced",rating:5,diff:1,shake:15,
+ i:[{n:"Gin",a:0.75,t:"spirit"},{n:"Green Chartreuse",a:0.75,t:"liqueur"},{n:"Maraschino Liqueur",a:0.75,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"}],
+ steps:["Combine all equal-part ingredients in a shaker with ice.","Shake hard 15 seconds.","Double strain into a chilled coupe."],
+ garnish:"None",tip:"A Prohibition-era classic from the Detroit Athletic Club. Green Chartreuse (not yellow) is essential — 130 herbs and botanicals made by monks in the French Alps. One of the most perfectly balanced cocktails ever created."},
+
+{id:10,base:"Whiskey",cat:"Stirred",name:"Paper Plane",desc:"Equal parts bourbon riff — bitter, sweet, boozy, tart",rating:5,diff:1,shake:15,
+ i:[{n:"Bourbon",a:0.75,t:"spirit"},{n:"Aperol",a:0.75,t:"liqueur"},{n:"Amaro Nonino",a:0.75,t:"liqueur"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"}],
+ steps:["Combine all equal parts in a shaker with ice.","Shake hard 15 seconds.","Double strain into a chilled coupe."],
+ garnish:"None",tip:"Invented at The Violet Hour in Chicago. The four equal parts create a drink that's simultaneously bitter, sweet, boozy, and tart. A modern masterpiece."},
+
+{id:11,base:"Gin",cat:"Negroni",name:"Cynar Negroni",desc:"Artichoke amaro swaps Campari — earthy, complex, darker",rating:4,diff:1,shake:30,
+ i:[{n:"Gin",a:1,t:"spirit"},{n:"Cynar",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"}],
+ steps:["Fill mixing glass with ice.","Add gin, Cynar, and vermouth.","Stir 30 seconds.","Strain over a large rock.","Garnish with an orange peel."],
+ garnish:"Orange peel",tip:"Cynar is an artichoke-based amaro — earthier and less bright than Campari. Creates a darker, more savory Negroni. Excellent with a botanically complex gin."},
+
+{id:12,base:"Gin",cat:"Sour",name:"Gin Sour",desc:"Gin, lemon, egg white — crisp, silky, elegant",rating:5,diff:2,shake:15,
+ i:[{n:"Gin",a:2,t:"spirit"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Egg White",a:1,t:"other",unit:"white"}],
+ steps:["Dry shake all ingredients without ice 12 seconds.","Add ice. Shake hard 15 seconds.","Double strain into a chilled coupe.","Optional: dot with Angostura bitters on the foam."],
+ garnish:"Angostura bitters on foam",tip:"London Dry gin shines in this format — juniper and citrus botanicals amplify the sour. The dry shake first is essential for proper foam."},
+
+{id:13,base:"Gin",cat:"Highball",name:"Tom Collins",desc:"Gin, lemon, soda. Classic, refreshing, enduring.",rating:5,diff:1,shake:0,
+ i:[{n:"Gin",a:2,t:"spirit"},{n:"Fresh Lemon Juice",a:1,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Soda Water",a:2,t:"mixer"}],
+ steps:["Add gin, lemon juice, and syrup to a Collins glass with ice.","Stir gently.","Top with club soda.","Garnish with a lemon wheel and cherry."],
+ garnish:"Lemon wheel + cherry",tip:"Simple drinks are judged on quality. Use a quality London Dry gin and freshly squeezed lemon. That's the whole recipe."},
+
+{id:14,base:"Gin",cat:"Punch",name:"Floral Gin Fizz Punch",desc:"Pale violet — people photograph it before drinking",rating:5,diff:2,shake:15,
+ i:[{n:"Gin",a:2,t:"spirit"},{n:"Crème de Violette",a:0.75,t:"liqueur"},{n:"Elderflower Liqueur",a:0.5,t:"liqueur"},{n:"Lavender Syrup",a:0.75,t:"syrup"},{n:"Fresh Lemon Juice",a:1,t:"juice"}],
+ steps:["Shake all (except sparkling water) with ice 15 seconds.","Strain into a coupe or wine glass over ice.","Top with a splash of sparkling water.","Batch: multiply by headcount, refrigerate, add sparkling water at service only."],
+ garnish:"Lemon wheel + edible flowers",tip:"Crème de violette creates a natural pale purple color. Lavender overpowers quickly — taste before adding more."},
+
+// ── TEQUILA ──────────────────────────────────────────────────
+{id:20,base:"Tequila",cat:"Classic",name:"Margarita",desc:"Tequila, lime, Cointreau. The essential cocktail.",rating:5,diff:1,shake:15,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Cointreau",a:0.75,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.25,t:"syrup"}],
+ steps:["Run a lime wedge around half the rim and press into kosher salt.","Shake all with ice 15 seconds.","Strain over fresh ice in a rocks glass.","Garnish with a lime wheel."],
+ garnish:"Lime wheel + salted half-rim",tip:"Fresh lime juice is non-negotiable. Cointreau over cheap triple sec. Espolon or Olmeca Altos blanco makes this sing."},
+
+{id:21,base:"Tequila",cat:"Classic",name:"Spicy Margarita",desc:"Jalapeño heat cuts through the citrus",rating:5,diff:2,shake:15,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Cointreau",a:0.75,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Jalapeño Syrup",a:0.5,t:"syrup"}],
+ steps:["Muddle 2 jalapeño slices in the shaker — remove seeds for less heat.","Add all remaining ingredients and ice.","Shake hard 15 seconds.","Double strain over ice.","Garnish with jalapeño slice and lime wheel."],
+ garnish:"Jalapeño slice + lime wheel",tip:"Control heat by adjusting seeds and syrup. Muddle fresh jalapeño for brightness; the syrup adds depth and sweetness."},
+
+{id:22,base:"Tequila",cat:"Classic",name:"Tommy's Margarita",desc:"Agave nectar, no Cointreau — pure tequila expression",rating:5,diff:1,shake:15,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Fresh Lime Juice",a:1,t:"juice"},{n:"Agave Nectar",a:0.5,t:"syrup"}],
+ steps:["Add tequila, lime, and agave nectar to a shaker with ice.","Shake hard 15 seconds.","Strain over ice.","Garnish with a lime wedge."],
+ garnish:"Lime wedge",tip:"Invented at Tommy's in San Francisco. Removing Cointreau lets the tequila speak — use the best blanco you have."},
+
+{id:23,base:"Tequila",cat:"Classic",name:"Mezcal Margarita",desc:"Smoky agave — unexpected and brilliant",rating:5,diff:1,shake:15,
+ i:[{n:"Mezcal",a:1.5,t:"spirit"},{n:"Tequila Blanco",a:0.5,t:"spirit"},{n:"Cointreau",a:0.75,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Agave Nectar",a:0.25,t:"syrup"}],
+ steps:["Combine all in a shaker with ice.","Shake 15 seconds.","Strain over ice.","Smoked salt rim optional."],
+ garnish:"Lime wheel + smoked salt rim",tip:"Half mezcal, half tequila gives smoke without overpowering the citrus. Del Maguey Vida works beautifully."},
+
+{id:24,base:"Tequila",cat:"Classic",name:"Frozen Margarita",desc:"Slushy, cold, perfect for summer parties",rating:4,diff:1,shake:0,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Cointreau",a:0.75,t:"liqueur"},{n:"Fresh Lime Juice",a:1,t:"juice"},{n:"Simple Syrup",a:0.5,t:"syrup"}],
+ steps:["Combine all with 1.5 cups of crushed ice in a blender.","Blend until smooth — slushy, not liquid.","Pour into a salt-rimmed glass.","Garnish with a lime wheel."],
+ garnish:"Lime wheel + salted rim",tip:"Add ½ cup fresh or frozen mango, strawberry, or watermelon for a fruit version. Don't over-blend."},
+
+{id:25,base:"Tequila",cat:"Classic",name:"Watermelon Margarita",desc:"Fresh watermelon juice makes this extraordinary",rating:5,diff:2,shake:15,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Cointreau",a:0.5,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Fresh Watermelon Juice",a:2,t:"juice"},{n:"Simple Syrup",a:0.25,t:"syrup"}],
+ steps:["Blend or press fresh watermelon and strain into juice.","Shake all with ice 15 seconds.","Strain over ice in a salted rocks glass.","Garnish with a small watermelon wedge."],
+ garnish:"Watermelon wedge + salted rim",tip:"Fresh watermelon juice only — bottled or concentrate is flat and artificial. Blend, strain through a fine mesh. Hibiscus salt on the rim is a beautiful upgrade."},
+
+{id:26,base:"Tequila",cat:"Highball",name:"Paloma",desc:"Mexico's actual favorite — tequila and grapefruit",rating:5,diff:1,shake:0,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Fresh Grapefruit Juice",a:2,t:"juice"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Simple Syrup",a:0.25,t:"syrup"},{n:"Soda Water",a:1,t:"mixer"}],
+ steps:["Optional: salt the rim of a highball glass.","Fill with ice.","Add tequila, both juices, and syrup.","Stir gently. Top with club soda.","Garnish with a grapefruit wedge."],
+ garnish:"Grapefruit wedge + optional salt rim",tip:"Fresh grapefruit juice transforms this drink. Ruby red is sweeter; white grapefruit is more bitter and complex."},
+
+{id:27,base:"Tequila",cat:"Highball",name:"Ranch Water",desc:"Tequila, lime, Topo Chico. Texas in a glass.",rating:5,diff:1,shake:0,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Soda Water",a:4,t:"mixer"}],
+ steps:["Fill a highball glass or bottle with ice.","Add tequila and lime juice.","Top with Topo Chico. Garnish with a lime wedge."],
+ garnish:"Lime wedge",tip:"Must be Topo Chico — its unusually high carbonation is what makes Ranch Water. Blanco tequila only. The whole point is simplicity."},
+
+{id:28,base:"Tequila",cat:"Highball",name:"Tequila Sunrise",desc:"Tequila, OJ, grenadine gradient — classic and striking",rating:4,diff:1,shake:0,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Orange Juice",a:4,t:"juice"},{n:"Grenadine",a:0.5,t:"syrup"}],
+ steps:["Fill a highball glass with ice.","Add tequila, then orange juice.","Slowly pour grenadine down the glass side — it sinks and creates the sunrise gradient.","Do not stir. Garnish with an orange wheel."],
+ garnish:"Orange wheel",tip:"The slow grenadine pour is the trick — it's denser than OJ so it sinks naturally. Use real pomegranate grenadine, not cheap red corn syrup."},
+
+{id:29,base:"Tequila",cat:"Stirred",name:"Oaxacan Old Fashioned",desc:"Mezcal and tequila, agave nectar, mole bitters",rating:5,diff:2,shake:30,
+ i:[{n:"Tequila Reposado",a:1.5,t:"spirit"},{n:"Mezcal",a:0.5,t:"spirit"},{n:"Agave Nectar",a:1,t:"other",unit:"tsp"},{n:"Mole Bitters",a:2,t:"bitters",unit:"dashes"}],
+ steps:["Add all to a rocks glass.","Add a large ice cube.","Stir gently 20 seconds.","Express and flame an orange peel over the glass."],
+ garnish:"Flamed orange peel",tip:"Created by Phil Ward at Death & Co. The smoke and earthiness of mezcal against reposado is extraordinary. Angostura works if you don't have mole bitters."},
+
+{id:30,base:"Tequila",cat:"Classic",name:"Tequila Sour",desc:"Citrus and egg white foam — a revelation",rating:4,diff:2,shake:15,
+ i:[{n:"Tequila Blanco",a:2,t:"spirit"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Egg White",a:1,t:"other",unit:"white"}],
+ steps:["Dry shake all without ice 12 seconds.","Add ice. Shake hard 15 seconds.","Double strain into a chilled coupe.","Optional: Angostura drops on the foam."],
+ garnish:"Angostura bitters on foam",tip:"Tequila's agave character pairs surprisingly well with citrus and silky egg white. A step beyond the margarita in complexity and texture."},
+
+// ── VODKA ────────────────────────────────────────────────────
+{id:40,base:"Vodka",cat:"Espresso Martini",name:"Espresso Martini",desc:"The original. Vodka, coffee liqueur, espresso.",rating:5,diff:1,shake:20,
+ i:[{n:"Vodka",a:2,t:"spirit"},{n:"Kahlúa",a:1,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"},{n:"Simple Syrup",a:0.25,t:"syrup"}],
+ steps:["Chill your coupe 5+ minutes in the freezer.","Pull espresso and cool completely — warm espresso destroys the foam.","Shake all very hard with ice 20 seconds.","Double strain into the chilled coupe.","Garnish with exactly 3 espresso beans."],
+ garnish:"3 espresso beans",tip:"Cool espresso is non-negotiable. Three beans represent health, wealth, and happiness — the tradition is part of the experience."},
+
+{id:41,base:"Vodka",cat:"Espresso Martini",name:"The Classic Lavender",desc:"Your signature build — floral, complex, unforgettable",rating:5,diff:2,shake:20,
+ i:[{n:"Vanilla Vodka",a:2,t:"spirit"},{n:"Tia Maria",a:1,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"},{n:"Lavender Syrup",a:0.5,t:"syrup"}],
+ steps:["Chill coupe. Cool espresso completely.","Shake all hard with ice 20 seconds.","Double strain into chilled coupe.","Garnish with 3 espresso beans and a dried lavender sprig."],
+ garnish:"3 espresso beans + dried lavender sprig",tip:"Vanilla vodka bridges floral lavender and bitter espresso in a way plain vodka simply can't replicate."},
+
+{id:42,base:"Vodka",cat:"Espresso Martini",name:"The White Velvet",desc:"Creamy, rich, dessert-forward — the showstopper",rating:5,diff:3,shake:25,
+ i:[{n:"Vanilla Vodka",a:1.5,t:"spirit"},{n:"Mozart White Chocolate",a:1,t:"liqueur"},{n:"Tia Maria",a:0.5,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"},{n:"Coconut Cream",a:0.5,t:"cream"}],
+ steps:["Chill coupe. Cool espresso completely.","Shake extremely hard 25 seconds — coconut cream needs force to incorporate.","Double strain into chilled coupe.","Garnish with toasted coconut flakes and 3 espresso beans."],
+ garnish:"Toasted coconut flakes + 3 espresso beans",tip:"White chocolate adds enough sweetness — skip any extra syrups. This drinks like dessert."},
+
+{id:43,base:"Vodka",cat:"Espresso Martini",name:"The Coconut Cloud",desc:"Tropical, light, effortlessly crowd-pleasing",rating:4,diff:2,shake:25,
+ i:[{n:"Vanilla Vodka",a:2,t:"spirit"},{n:"Tia Maria",a:0.75,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"},{n:"Coconut Cream",a:0.75,t:"cream"},{n:"Lavender Syrup",a:0.25,t:"syrup"}],
+ steps:["Chill coupe. Cool espresso.","Shake extremely hard 25–30 seconds.","Double strain into coupe.","Garnish with toasted coconut and lavender sprig."],
+ garnish:"Toasted coconut flakes + lavender sprig",tip:"Pull back to ½ oz coconut cream for a drier, more spirit-forward version."},
+
+{id:44,base:"Vodka",cat:"Espresso Martini",name:"The Licor 43 Twist",desc:"Spanish vanilla-citrus — subtle and complex",rating:4,diff:2,shake:20,
+ i:[{n:"Vanilla Vodka",a:1.5,t:"spirit"},{n:"Licor 43",a:0.75,t:"liqueur"},{n:"Tia Maria",a:0.5,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"},{n:"Lavender Syrup",a:0.25,t:"syrup"}],
+ steps:["Chill coupe. Cool espresso.","Shake hard 20 seconds.","Double strain into chilled coupe.","Garnish with orange zest twist and 3 espresso beans."],
+ garnish:"Orange zest twist + 3 espresso beans",tip:"Licor 43 is naturally sweet with citrus-vanilla notes. Taste before adding more syrup — it often doesn't need it."},
+
+{id:45,base:"Vodka",cat:"Espresso Martini",name:"White Choc Lavender",desc:"Rich, floral, completely unexpected",rating:4,diff:3,shake:20,
+ i:[{n:"Vanilla Vodka",a:1.5,t:"spirit"},{n:"Mozart White Chocolate",a:1,t:"liqueur"},{n:"Coconut Cream",a:0.5,t:"cream"},{n:"Lavender Syrup",a:0.5,t:"syrup"},{n:"Fresh Lemon Juice",a:0.25,t:"juice"}],
+ steps:["Chill coupe.","Shake all hard with ice 20 seconds.","Double strain into chilled coupe.","Garnish with dried lavender and white chocolate shaving."],
+ garnish:"Dried lavender + white chocolate shaving",tip:"The lemon juice cuts the sweetness — don't skip it. It's the difference between cloying and perfectly balanced."},
+
+{id:46,base:"Vodka",cat:"Espresso Martini",name:"Salted Caramel Espresso",desc:"Sweet, salty, deeply satisfying",rating:4,diff:2,shake:20,
+ i:[{n:"Vodka",a:2,t:"spirit"},{n:"Kahlúa",a:0.75,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"},{n:"Salted Caramel Syrup",a:0.5,t:"syrup"}],
+ steps:["Chill coupe. Cool espresso.","Shake hard 20 seconds.","Double strain into chilled coupe.","Garnish with 3 espresso beans and a pinch of flaky sea salt on the foam."],
+ garnish:"3 espresso beans + flaky sea salt",tip:"The salt on the foam is transformative — it brings out sweetness and rounds the bitterness. Use quality flaky salt, not table salt."},
+
+{id:47,base:"Vodka",cat:"Espresso Martini",name:"Tiramisu Martini",desc:"Italian dessert in a glass — amaretto and espresso",rating:4,diff:2,shake:20,
+ i:[{n:"Vodka",a:1.5,t:"spirit"},{n:"Kahlúa",a:1,t:"liqueur"},{n:"Amaretto",a:0.5,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"},{n:"Heavy Cream",a:0.5,t:"cream"}],
+ steps:["Chill coupe. Cool espresso.","Shake all very hard 20 seconds.","Double strain into chilled coupe.","Dust the foam lightly with cocoa powder."],
+ garnish:"Dusted cocoa powder",tip:"Amaretto adds an almond-marzipan note that mimics tiramisu perfectly. A tiny splash of vanilla extract takes it even further."},
+
+{id:48,base:"Vodka",cat:"Espresso Martini",name:"Mocha Martini",desc:"Dark chocolate and espresso — intense, lush, adult",rating:4,diff:2,shake:20,
+ i:[{n:"Vodka",a:2,t:"spirit"},{n:"Dark Crème de Cacao",a:0.75,t:"liqueur"},{n:"Kahlúa",a:0.5,t:"liqueur"},{n:"Espresso",a:1,t:"coffee"}],
+ steps:["Chill coupe. Cool espresso.","Shake all hard 20 seconds.","Double strain into chilled coupe.","Garnish with a chocolate-covered espresso bean."],
+ garnish:"Chocolate-covered espresso bean",tip:"Dark crème de cacao (not white) adds genuine chocolate depth without cloying sweetness. Less sweet than it sounds — very adult."},
+
+{id:49,base:"Vodka",cat:"Espresso Martini",name:"Cold Brew Martini",desc:"Cold brew instead of espresso — smoother, less acidic",rating:4,diff:1,shake:20,
+ i:[{n:"Vodka",a:2,t:"spirit"},{n:"Kahlúa",a:0.75,t:"liqueur"},{n:"Cold Brew Coffee",a:1.5,t:"coffee"},{n:"Simple Syrup",a:0.25,t:"syrup"}],
+ steps:["Chill coupe.","Shake all very hard with ice 20 seconds — still need vigorous shaking for foam.","Double strain into chilled coupe.","Garnish with 3 espresso beans."],
+ garnish:"3 espresso beans",tip:"Cold brew gives a smoother, less acidic coffee flavor. Shake just as hard — aeration still creates the foam even without freshly pulled espresso."},
+
+{id:50,base:"Vodka",cat:"Classic",name:"Moscow Mule",desc:"Vodka, ginger beer, lime — in a copper mug",rating:4,diff:1,shake:0,
+ i:[{n:"Vodka",a:2,t:"spirit"},{n:"Ginger Beer",a:4,t:"mixer"},{n:"Fresh Lime Juice",a:0.5,t:"juice"}],
+ steps:["Fill a copper mug with crushed ice.","Add vodka and lime juice.","Top with ginger beer. Stir gently.","Garnish with a lime wedge and mint sprig."],
+ garnish:"Lime wedge + mint sprig",tip:"Use a spicy ginger beer (Fever-Tree, Bundaberg). The copper mug keeps it colder and adds to the experience — it's not just aesthetic."},
+
+{id:51,base:"Vodka",cat:"Classic",name:"Cosmopolitan",desc:"Cranberry, Triple Sec, citrus — forever iconic",rating:4,diff:1,shake:15,
+ i:[{n:"Vodka",a:1.5,t:"spirit"},{n:"Triple Sec",a:0.5,t:"liqueur"},{n:"Cranberry Juice",a:0.5,t:"juice"},{n:"Fresh Lime Juice",a:0.25,t:"juice"}],
+ steps:["Shake all with ice 15 seconds.","Strain into a chilled martini glass.","Garnish with an expressed orange peel."],
+ garnish:"Expressed orange peel",tip:"The Cosmopolitan deserves better than its reputation. Made properly with fresh lime and quality cranberry juice, it's genuinely elegant."},
+
+// ── WHISKEY ──────────────────────────────────────────────────
+{id:60,base:"Whiskey",cat:"Classic",name:"Old Fashioned",desc:"Whiskey, sugar, bitters. The original cocktail.",rating:5,diff:1,shake:30,
+ i:[{n:"Bourbon",a:2,t:"spirit"},{n:"Simple Syrup",a:0.25,t:"syrup"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"}],
+ steps:["Add simple syrup and bitters to a rocks glass.","Add one large ice cube — bigger ice means slower dilution.","Pour in bourbon.","Stir gently in the glass 20–30 seconds.","Express a wide orange peel over the top, rim the glass, place it in.","Optional: Luxardo cherry."],
+ garnish:"Orange peel + optional Luxardo cherry",tip:"Four Roses Single Barrel or Woodford Reserve are ideal. Don't muddle the orange. The old fashioned rewards restraint."},
+
+{id:61,base:"Whiskey",cat:"Classic",name:"Rye Old Fashioned",desc:"Rye whiskey adds spice and pepper — drier, sharper",rating:5,diff:1,shake:30,
+ i:[{n:"Rye Whiskey",a:2,t:"spirit"},{n:"Simple Syrup",a:0.25,t:"syrup"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"},{n:"Orange Bitters",a:1,t:"bitters",unit:"dash"}],
+ steps:["Add syrups and bitters to a rocks glass.","Add large ice cube and pour rye.","Stir gently 25 seconds.","Express orange peel and drop in."],
+ garnish:"Orange peel",tip:"Rye's spice — black pepper, caraway, dill — makes a more complex, drier Old Fashioned than bourbon. Rittenhouse Rye is excellent here."},
+
+{id:62,base:"Whiskey",cat:"Classic",name:"Maple Old Fashioned",desc:"Maple syrup replaces sugar — richer and more complex",rating:4,diff:1,shake:30,
+ i:[{n:"Bourbon",a:2,t:"spirit"},{n:"Maple Syrup",a:0.25,t:"syrup"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"}],
+ steps:["Add maple syrup and bitters to a rocks glass.","Add large ice cube and bourbon.","Stir gently 25 seconds.","Express orange peel and drop in."],
+ garnish:"Orange peel",tip:"Use Grade B (dark) maple syrup — deeper and more complex than Grade A. The caramel and vanilla of bourbon amplify the maple beautifully."},
+
+{id:63,base:"Whiskey",cat:"Classic",name:"Smoked Old Fashioned",desc:"Cherry wood smoke adds drama and incredible depth",rating:5,diff:3,shake:30,
+ i:[{n:"Bourbon",a:2,t:"spirit"},{n:"Simple Syrup",a:0.25,t:"syrup"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"},{n:"Cherry Wood",a:1,t:"other",unit:"chip"}],
+ steps:["Build an Old Fashioned in a rocks glass over a large cube.","Using a smoking gun or burning cherry wood chip, trap smoke under an overturned glass.","Place the glass over the drink for 10 seconds.","Lift and immediately present — serve before the smoke dissipates."],
+ garnish:"Smoked orange peel",tip:"Cherry or applewood complement bourbon. Don't over-smoke — 10 seconds is plenty. The theater is part of the experience."},
+
+{id:64,base:"Whiskey",cat:"Classic",name:"Whiskey Sour",desc:"Bourbon, lemon, egg white. Silky and balanced.",rating:5,diff:2,shake:15,
+ i:[{n:"Bourbon",a:2,t:"spirit"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Egg White",a:1,t:"other",unit:"white"}],
+ steps:["Dry shake all without ice 12 seconds to emulsify the egg white.","Add ice. Shake hard 15 more seconds.","Strain into a rocks glass over ice or a chilled coupe.","Optional: dot Angostura bitters on the foam and swirl.","Garnish with cherry and orange slice."],
+ garnish:"Luxardo cherry + orange slice",tip:"The dry shake first is the secret to silky foam — don't skip it. Aquafaba (chickpea liquid) works as a vegan egg white substitute."},
+
+{id:65,base:"Whiskey",cat:"Classic",name:"New York Sour",desc:"Whiskey sour with a red wine float — dramatic and delicious",rating:5,diff:2,shake:15,
+ i:[{n:"Bourbon",a:2,t:"spirit"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Egg White",a:1,t:"other",unit:"white"},{n:"Dry Red Wine",a:0.5,t:"other",unit:"float"}],
+ steps:["Dry shake bourbon, lemon, syrup, and egg white 12 seconds.","Add ice. Shake hard 15 more seconds.","Strain into a rocks glass over a large cube.","Slowly float red wine over the back of a spoon on top.","The wine creates a beautiful dark red layer over the foam."],
+ garnish:"Red wine float",tip:"Use Malbec, Côtes du Rhône, or Grenache. The float adds tannin and fruit. It looks extraordinary and tastes even better."},
+
+{id:66,base:"Whiskey",cat:"Stirred",name:"Manhattan",desc:"Whiskey, vermouth, bitters. Stirred, never shaken.",rating:5,diff:1,shake:30,
+ i:[{n:"Rye Whiskey",a:2,t:"spirit"},{n:"Sweet Vermouth",a:1,t:"vermouth"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"}],
+ steps:["Fill a mixing glass with ice.","Add rye, sweet vermouth, and bitters.","Stir 30 seconds until cold and diluted.","Strain into a chilled coupe or Nick & Nora glass.","Garnish with a Luxardo cherry."],
+ garnish:"Luxardo cherry",tip:"Rye is traditional and gives the Manhattan its characteristic spice. Carpano Antica for vermouth is non-negotiable for the best results."},
+
+{id:67,base:"Whiskey",cat:"Stirred",name:"Rob Roy",desc:"Manhattan with Scotch — smoky, peaty, elegant",rating:4,diff:1,shake:30,
+ i:[{n:"Scotch Whisky",a:2,t:"spirit"},{n:"Sweet Vermouth",a:1,t:"vermouth"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"}],
+ steps:["Fill mixing glass with ice.","Add Scotch, vermouth, and bitters.","Stir 30 seconds.","Strain into chilled coupe.","Garnish with cherry or lemon twist."],
+ garnish:"Luxardo cherry or lemon twist",tip:"A blended Scotch works well (Dewar's). A lightly peated single malt transforms it. Don't use a heavily peated Islay Scotch — it overwhelms the vermouth."},
+
+{id:68,base:"Whiskey",cat:"Stirred",name:"Black Manhattan",desc:"Averna replaces vermouth — bitter, complex, deeper",rating:5,diff:1,shake:30,
+ i:[{n:"Rye Whiskey",a:2,t:"spirit"},{n:"Averna Amaro",a:1,t:"liqueur"},{n:"Angostura Bitters",a:1,t:"bitters",unit:"dash"},{n:"Orange Bitters",a:1,t:"bitters",unit:"dash"}],
+ steps:["Fill mixing glass with ice.","Add rye, Averna, and both bitters.","Stir 30 seconds.","Strain into chilled coupe.","Garnish with a Luxardo cherry."],
+ garnish:"Luxardo cherry",tip:"Averna is a Sicilian amaro with citrus, herbs, and chocolate notes. It deepens the Manhattan into something richer and more interesting than the original."},
+
+{id:69,base:"Whiskey",cat:"Highball",name:"Whiskey Highball",desc:"Whiskey and sparkling water. Japanese precision.",rating:5,diff:1,shake:0,
+ i:[{n:"Japanese Whisky",a:2,t:"spirit"},{n:"Soda Water",a:4,t:"mixer"}],
+ steps:["Chill a highball glass in the freezer until frosted.","Fill with as much large, clear ice as possible.","Pour whisky slowly over the ice.","Pour sparkling water gently and slowly — preserve every bubble.","Stir once, gently, from bottom to top.","Garnish with a lemon peel twist."],
+ garnish:"Lemon peel twist",tip:"The Japanese highball is an art form — extreme chilling, maximum ice, gentle pour. Suntory Toki is the classic choice. This technique works beautifully with any quality whisky."},
+
+{id:70,base:"Whiskey",cat:"Classic",name:"Hot Toddy",desc:"Whiskey, honey, lemon, hot water — winter in a mug",rating:4,diff:1,shake:0,
+ i:[{n:"Whiskey",a:1.5,t:"spirit"},{n:"Honey",a:1,t:"syrup",unit:"tbsp"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Hot Water",a:4,t:"mixer"}],
+ steps:["Add honey and lemon juice to a mug.","Pour in whiskey.","Top with hot (not boiling) water — about 160°F.","Stir until honey dissolves completely.","Garnish with a lemon wheel and cinnamon stick."],
+ garnish:"Lemon wheel + cinnamon stick",tip:"Use an Irish pot still whiskey (Jameson, Redbreast) for the most soothing version. A couple of cloves in the mug deepen the winter spice beautifully."},
+
+// ── RUM ──────────────────────────────────────────────────────
+{id:80,base:"Rum",cat:"Classic",name:"Daiquiri",desc:"Rum, lime, sugar. Three ingredients. Completely flawless.",rating:5,diff:1,shake:15,
+ i:[{n:"White Rum",a:2,t:"spirit"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"}],
+ steps:["Chill a coupe glass.","Shake rum, lime, and syrup hard with ice 15 seconds.","Double strain into chilled coupe.","Garnish with a lime wheel or expressed lime peel."],
+ garnish:"Lime wheel or lime peel",tip:"The daiquiri exposes cheap rum immediately. Use Plantation 3 Star, Bacardi Superior, or Flor de Caña. Fresh lime only, always."},
+
+{id:81,base:"Rum",cat:"Classic",name:"Hemingway Daiquiri",desc:"The double daiquiri — grapefruit, maraschino, drier",rating:5,diff:2,shake:15,
+ i:[{n:"White Rum",a:2,t:"spirit"},{n:"Maraschino Liqueur",a:0.5,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Fresh Grapefruit Juice",a:0.5,t:"juice"}],
+ steps:["Shake all with ice 15 seconds.","Double strain into chilled coupe."],
+ garnish:"None or lime wheel",tip:"Also called the Papa Doble. No syrup — Hemingway liked it dry. Maraschino adds cherry and almond notes without sweetness. The original at El Floridita, Havana."},
+
+{id:82,base:"Rum",cat:"Classic",name:"Banana Daiquiri",desc:"Fresh banana adds tropical depth to the classic",rating:4,diff:2,shake:15,
+ i:[{n:"White Rum",a:2,t:"spirit"},{n:"Banana Liqueur",a:0.5,t:"liqueur"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.5,t:"syrup"}],
+ steps:["Muddle ¼ ripe banana in shaker.","Add rum, banana liqueur, lime, syrup, and ice.","Shake hard 15 seconds.","Double strain into chilled coupe.","Garnish with a banana chip."],
+ garnish:"Banana chip + lime wheel",tip:"Use a ripe, spotty banana for maximum flavor. Muddle well and don't skip the banana liqueur — it amplifies without overpowering the rum."},
+
+{id:83,base:"Rum",cat:"Classic",name:"Strawberry Daiquiri",desc:"Fresh strawberries, summer in a coupe",rating:4,diff:2,shake:15,
+ i:[{n:"White Rum",a:2,t:"spirit"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.5,t:"syrup"},{n:"Fresh Strawberries",a:3,t:"other",unit:"berries"}],
+ steps:["Muddle fresh strawberries in shaker.","Add rum, lime, syrup, and ice.","Shake hard 15 seconds.","Double strain into chilled coupe.","Garnish with a half strawberry on the rim."],
+ garnish:"Fresh strawberry half",tip:"Fresh strawberries only — never puree or extract. Hull and quarter before muddling. The natural acidity of fresh berries is what makes it bright."},
+
+{id:84,base:"Rum",cat:"Highball",name:"Mojito",desc:"Mint, lime, rum, soda. The definitive summer drink.",rating:5,diff:2,shake:0,
+ i:[{n:"White Rum",a:2,t:"spirit"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Fresh Mint",a:8,t:"other",unit:"leaves"},{n:"Soda Water",a:2,t:"mixer"}],
+ steps:["Add mint and syrup to a Collins glass.","Clap the mint between your palms — don't muddle hard, which makes it bitter.","Add lime juice and rum.","Fill with crushed ice.","Top with club soda. Churn gently.","Garnish with a large mint bouquet and lime wheel."],
+ garnish:"Mint bouquet + lime wheel",tip:"Clapping mint releases oils without tearing the leaves and causing bitterness. Fresh mint is everything here — don't use dried."},
+
+{id:85,base:"Rum",cat:"Highball",name:"Dark & Stormy",desc:"Dark rum float over ginger beer — nautical classic",rating:4,diff:1,shake:0,
+ i:[{n:"Dark Rum",a:2,t:"spirit"},{n:"Ginger Beer",a:4,t:"mixer"},{n:"Fresh Lime Juice",a:0.5,t:"juice"}],
+ steps:["Fill a highball glass with ice.","Add lime juice and ginger beer.","Float dark rum over the back of a spoon — pour very slowly.","Garnish with a lime wedge."],
+ garnish:"Lime wedge",tip:"Gosling's Black Seal rum is the original — actually trademarked for the Dark & Stormy. The float hits you with rum on first sip and gradually mixes as you drink."},
+
+{id:86,base:"Rum",cat:"Highball",name:"Cuba Libre",desc:"Rum and Coke with fresh lime — much better than it sounds",rating:4,diff:1,shake:0,
+ i:[{n:"White Rum",a:2,t:"spirit"},{n:"Coca-Cola",a:4,t:"mixer"},{n:"Fresh Lime Juice",a:0.5,t:"juice"}],
+ steps:["Fill a highball glass with ice.","Add rum and lime juice.","Top with Coca-Cola. Stir gently.","Garnish with a lime wedge."],
+ garnish:"Lime wedge",tip:"Fresh lime juice is what separates a Cuba Libre from a rum and Coke. Use Mexican Coke (cane sugar, not HFCS) for the best version."},
+
+{id:87,base:"Rum",cat:"Tropical",name:"Mai Tai",desc:"The benchmark tiki drink. The one to get right.",rating:5,diff:3,shake:15,
+ i:[{n:"Aged Rum",a:1,t:"spirit"},{n:"Dark Rum",a:1,t:"spirit"},{n:"Cointreau",a:0.75,t:"liqueur"},{n:"Fresh Lime Juice",a:1,t:"juice"},{n:"Orgeat Syrup",a:0.5,t:"syrup"}],
+ steps:["Shake both rums, Cointreau, lime juice, and orgeat with crushed ice 10 seconds.","Pour unstrained into a tiki mug or rocks glass — ice and all.","Add more crushed ice to mound above the glass.","Garnish with a spent lime shell, mint bouquet, and cherry."],
+ garnish:"Mint bouquet + lime shell + cherry",tip:"Orgeat (almond-orange flower syrup) is what makes a Mai Tai — never substitute. Trader Vic's original used aged Jamaican rum. Never add pineapple juice."},
+
+{id:88,base:"Rum",cat:"Tropical",name:"Piña Colada",desc:"Rum, coconut, pineapple. A classic for a reason.",rating:4,diff:2,shake:0,
+ i:[{n:"White Rum",a:2,t:"spirit"},{n:"Coconut Cream",a:2,t:"cream"},{n:"Pineapple Juice",a:4,t:"juice"}],
+ steps:["Blend all with 1 cup of crushed ice until smooth.","Pour into a chilled hurricane glass.","Garnish with a pineapple wedge, cherry, and umbrella."],
+ garnish:"Pineapple wedge + cherry + umbrella",tip:"Coco Lopez is the classic coconut cream. Don't use coconut milk — the fat content is wrong. A squeeze of fresh lime brightens the whole drink."},
+
+{id:89,base:"Rum",cat:"Tropical",name:"Jungle Bird",desc:"Campari and rum with pineapple — unexpectedly brilliant",rating:5,diff:2,shake:15,
+ i:[{n:"Dark Rum",a:1.5,t:"spirit"},{n:"Campari",a:0.75,t:"liqueur"},{n:"Pineapple Juice",a:1.5,t:"juice"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Simple Syrup",a:0.5,t:"syrup"}],
+ steps:["Shake all with ice 15 seconds.","Strain over ice in a rocks glass.","Garnish with a pineapple wedge."],
+ garnish:"Pineapple wedge",tip:"The bitterness of Campari against sweet pineapple and funky rum is one of cocktailing's great surprises. Use Appleton Estate for the rum."},
+
+{id:90,base:"Rum",cat:"Punch",name:"Rum Punch",desc:"Caribbean party punch — scales beautifully",rating:4,diff:1,shake:0,
+ i:[{n:"Dark Rum",a:2,t:"spirit"},{n:"Pineapple Juice",a:2,t:"juice"},{n:"Orange Juice",a:2,t:"juice"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Grenadine",a:0.25,t:"syrup"}],
+ steps:["Combine all in a pitcher or punch bowl.","Stir well. Serve over ice.","Garnish with citrus wheels and a cherry."],
+ garnish:"Citrus wheels + cherry",tip:"The Caribbean formula: one of sour, two of sweet, three of strong, four of weak. Scale by any factor. Float dark rum on top before serving for dramatic effect."},
+
+// ── BRANDY / APERITIVO ──────────────────────────────────────
+{id:100,base:"Brandy",cat:"Classic",name:"Sidecar",desc:"Cognac, Cointreau, lemon. French elegance in a coupe.",rating:5,diff:2,shake:15,
+ i:[{n:"Cognac",a:2,t:"spirit"},{n:"Cointreau",a:0.75,t:"liqueur"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"}],
+ steps:["Sugar-rim the coupe by running a lemon wedge around the edge and pressing into sugar.","Shake all with ice 15 seconds.","Double strain into the chilled sugar-rimmed coupe.","Garnish with an expressed orange peel."],
+ garnish:"Sugar rim + orange peel",tip:"The ratio is everything — equal parts makes it too sour, 2:1:1 is the sweet spot. Use VS or VSOP Cognac. Rémy Martin or Hennessy are both excellent."},
+
+{id:101,base:"Brandy",cat:"Classic",name:"Brandy Alexander",desc:"Cognac, dark crème de cacao, cream — rich and indulgent",rating:4,diff:1,shake:15,
+ i:[{n:"Cognac",a:1.5,t:"spirit"},{n:"Dark Crème de Cacao",a:1,t:"liqueur"},{n:"Heavy Cream",a:1,t:"cream"}],
+ steps:["Shake all with ice 15 seconds.","Double strain into a chilled coupe.","Dust generously with freshly grated nutmeg."],
+ garnish:"Fresh grated nutmeg",tip:"The nutmeg isn't decoration — it's essential. Grate it fresh over the top right before serving. Use whole nutmeg and a microplane."},
+
+{id:102,base:"Brandy",cat:"Classic",name:"Corpse Reviver No. 1",desc:"The original morning-after cure — brandy and apple brandy",rating:4,diff:1,shake:30,
+ i:[{n:"Cognac",a:1.5,t:"spirit"},{n:"Apple Brandy",a:0.75,t:"spirit"},{n:"Sweet Vermouth",a:0.75,t:"vermouth"}],
+ steps:["Combine all in a mixing glass with ice.","Stir 30 seconds.","Strain into a chilled coupe.","Garnish with a lemon twist."],
+ garnish:"Lemon twist",tip:"The older of two Corpse Revivers. Apple brandy adds orchard fruit and sweetness. Calvados is the gold standard apple brandy here."},
+
+{id:103,base:"Brandy",cat:"Classic",name:"Vieux Carré",desc:"New Orleans classic — rye, cognac, vermouth, Bénédictine",rating:5,diff:2,shake:30,
+ i:[{n:"Rye Whiskey",a:0.75,t:"spirit"},{n:"Cognac",a:0.75,t:"spirit"},{n:"Sweet Vermouth",a:0.75,t:"vermouth"},{n:"Bénédictine",a:0.25,t:"liqueur"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"},{n:"Peychaud's Bitters",a:2,t:"bitters",unit:"dashes"}],
+ steps:["Fill a rocks glass with one large cube.","Add all ingredients directly to the glass.","Stir gently 20 seconds.","Garnish with a lemon twist and cherry."],
+ garnish:"Lemon twist + cherry",tip:"Created at the Carousel Bar in New Orleans' Hotel Monteleone. Built in the glass, not a mixing glass. The Bénédictine adds an herbal honey note that ties everything together."},
+
+{id:104,base:"Brandy",cat:"Sour",name:"Pisco Sour",desc:"South American brandy, egg white foam, Angostura art",rating:5,diff:2,shake:15,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Fresh Lime Juice",a:1,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Egg White",a:1,t:"other",unit:"white"}],
+ steps:["Dry shake all without ice 12 seconds.","Add ice. Shake hard 15 seconds.","Strain into a chilled coupe.","Dot 3 drops of Angostura bitters on the foam.","Use a toothpick to drag a pattern through the dots."],
+ garnish:"Angostura bitters pattern on foam",tip:"Pisco is an unaged grape brandy from Peru and Chile. Peruvian Pisco (Quebranta grape) is fruitier; Chilean is more neutral. The foam decoration is a tradition — don't skip it."},
+
+{id:105,base:"Brandy",cat:"Highball",name:"Calvados & Soda",desc:"Apple brandy highball — orchard fresh, incredibly easy",rating:4,diff:1,shake:0,
+ i:[{n:"Calvados",a:2,t:"spirit"},{n:"Soda Water",a:4,t:"mixer"},{n:"Fresh Lemon Juice",a:0.25,t:"juice"}],
+ steps:["Fill a highball glass with ice.","Add Calvados and lemon juice.","Top gently with club soda.","Garnish with a thin apple slice."],
+ garnish:"Thin apple slice",tip:"Calvados is aged apple brandy from Normandy, France. The soda format makes its apple and vanilla notes incredibly fresh. A squeeze of lemon keeps it bright."},
+
+{id:106,base:"Brandy",cat:"Classic",name:"Stinger",desc:"Cognac and white crème de menthe — bracingly refreshing",rating:4,diff:1,shake:15,
+ i:[{n:"Cognac",a:2,t:"spirit"},{n:"White Crème de Menthe",a:0.75,t:"liqueur"}],
+ steps:["Shake both with ice 15 seconds.","Strain into a chilled coupe or over crushed ice.","No garnish needed."],
+ garnish:"None or mint sprig",tip:"A classic digestif. The mint cuts right through the richness of cognac. Serve very cold — it should be almost slushy on crushed ice."},
+
+{id:107,base:"Brandy",cat:"Punch",name:"Brandy Milk Punch",desc:"New Orleans brunch staple — creamy, warming, perfect",rating:4,diff:1,shake:15,
+ i:[{n:"Cognac",a:2,t:"spirit"},{n:"Whole Milk",a:4,t:"cream"},{n:"Simple Syrup",a:0.5,t:"syrup"},{n:"Vanilla Extract",a:1,t:"other",unit:"tsp"}],
+ steps:["Shake cognac, syrup, vanilla extract, and milk hard with ice.","Strain into a chilled rocks glass over ice.","Grate fresh nutmeg over the top."],
+ garnish:"Fresh grated nutmeg",tip:"The brunch cocktail of New Orleans. Use whole milk for richness. A splash of bourbon alongside the cognac is a popular variation. Serve very cold."},
+
+{id:108,base:"Brandy",cat:"Stirred",name:"Japanese Cocktail",desc:"Cognac, orgeat, Angostura — elegant and surprisingly delicious",rating:4,diff:1,shake:30,
+ i:[{n:"Cognac",a:2,t:"spirit"},{n:"Orgeat Syrup",a:0.5,t:"syrup"},{n:"Angostura Bitters",a:2,t:"bitters",unit:"dashes"}],
+ steps:["Stir all with ice 30 seconds in a mixing glass.","Strain into a chilled coupe.","Garnish with a lemon twist."],
+ garnish:"Lemon twist",tip:"One of Jerry Thomas's originals from his 1862 Bar-Tender's Guide. Despite the name, it has no Japanese ingredients — it was named to honor Commodore Perry's famous Japan expedition. The orgeat adds almond richness."},
+
+{id:109,base:"Brandy",cat:"Classic",name:"Between the Sheets",desc:"Cognac, rum, Cointreau, lemon — bright and punchy",rating:4,diff:1,shake:15,
+ i:[{n:"Cognac",a:1,t:"spirit"},{n:"White Rum",a:1,t:"spirit"},{n:"Cointreau",a:1,t:"liqueur"},{n:"Fresh Lemon Juice",a:0.5,t:"juice"}],
+ steps:["Shake all with ice 15 seconds.","Double strain into a chilled coupe.","Garnish with a lemon twist."],
+ garnish:"Lemon twist",tip:"A 1930s classic that's essentially a Sidecar with rum added. The rum brings a tropical note that lifts the cognac beautifully. Equal parts is the key to balance."},
+
+{id:110,base:"Brandy",cat:"Classic",name:"Metropolitan",desc:"Cognac Cosmopolitan — deeper and more complex",rating:4,diff:1,shake:15,
+ i:[{n:"Cognac",a:1.5,t:"spirit"},{n:"Cointreau",a:0.5,t:"liqueur"},{n:"Cranberry Juice",a:0.5,t:"juice"},{n:"Fresh Lime Juice",a:0.25,t:"juice"}],
+ steps:["Shake all with ice 15 seconds.","Double strain into a chilled martini glass.","Garnish with an expressed orange peel."],
+ garnish:"Expressed orange peel",tip:"Think of it as a Cosmopolitan grown up. The cognac's dried fruit and oak notes turn a good drink into a great one."},
+
+// ── MORE GIN ─────────────────────────────────────────────────
+{id:15,base:"Gin",cat:"Sour",name:"Aviation",desc:"Gin, maraschino, crème de violette — the purple classic",rating:5,diff:2,shake:15,
+ i:[{n:"Gin",a:2,t:"spirit"},{n:"Maraschino Liqueur",a:0.5,t:"liqueur"},{n:"Crème de Violette",a:0.25,t:"liqueur"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"}],
+ steps:["Shake all with ice 15 seconds.","Double strain into a chilled coupe.","Garnish with a Luxardo cherry."],
+ garnish:"Luxardo cherry",tip:"The crème de violette turns the drink a pale cloudy purple — the color of a sunset sky, hence the name. Use just a small amount or it turns medicinal. Crème Yvette is a good alternative."},
+
+{id:16,base:"Gin",cat:"Classic",name:"Gimlet",desc:"Gin and lime cordial. Bracingly simple.",rating:4,diff:1,shake:15,
+ i:[{n:"Gin",a:2.5,t:"spirit"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"}],
+ steps:["Shake all with ice 15 seconds.","Strain into a chilled coupe.","Garnish with a lime wheel."],
+ garnish:"Lime wheel",tip:"The traditional gimlet uses Rose's lime cordial — a 50/50 split with gin. The fresh lime version is a modern preference and genuinely better. Try it both ways."},
+
+{id:17,base:"Gin",cat:"Highball",name:"Singapore Sling",desc:"Gin, cherry liqueur, Cointreau, pineapple — tropical legend",rating:4,diff:3,shake:15,
+ i:[{n:"Gin",a:1.5,t:"spirit"},{n:"Cherry Heering",a:0.5,t:"liqueur"},{n:"Cointreau",a:0.25,t:"liqueur"},{n:"Bénédictine",a:0.25,t:"liqueur"},{n:"Pineapple Juice",a:2,t:"juice"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Grenadine",a:0.25,t:"syrup"},{n:"Angostura Bitters",a:1,t:"bitters",unit:"dash"}],
+ steps:["Shake all with ice 15 seconds.","Strain over ice in a Collins glass.","Top with a small splash of club soda if desired.","Garnish with pineapple wedge and cherry."],
+ garnish:"Pineapple wedge + cherry + umbrella",tip:"The original from Raffles Hotel, Singapore circa 1915. It looks complicated but it's built for batching beautifully. Make a pitcher — multiply everything by 8."},
+
+// ── MORE TEQUILA ──────────────────────────────────────────────
+{id:31,base:"Tequila",cat:"Classic",name:"Tequila Negroni",desc:"Agave-forward take on the bitter classic",rating:5,diff:1,shake:30,
+ i:[{n:"Tequila Blanco",a:1,t:"spirit"},{n:"Campari",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"}],
+ steps:["Fill a mixing glass with ice.","Add tequila, Campari, and vermouth.","Stir 30 seconds.","Strain over a large rock.","Express orange peel over the top."],
+ garnish:"Orange peel",tip:"Blanco tequila's grassy, vegetal notes work surprisingly well against Campari's bitterness. A different animal from the gin original — equally great."},
+
+{id:32,base:"Tequila",cat:"Sour",name:"Añejo Sour",desc:"Aged tequila, lemon, honey — smooth and complex",rating:4,diff:2,shake:15,
+ i:[{n:"Tequila Añejo",a:2,t:"spirit"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Honey Syrup",a:0.75,t:"syrup"},{n:"Egg White",a:1,t:"other",unit:"white"}],
+ steps:["Dry shake all without ice 12 seconds.","Add ice. Shake hard 15 more seconds.","Double strain into a chilled coupe.","Garnish with a dehydrated lemon wheel."],
+ garnish:"Dehydrated lemon wheel",tip:"Añejo tequila (aged 1+ years) brings oak, vanilla, and caramel that make it drink more like bourbon in a sour. Honey syrup (2:1 honey to water) amplifies the richness."},
+
+// ── MORE VODKA ────────────────────────────────────────────────
+{id:52,base:"Vodka",cat:"Classic",name:"Vodka Martini",desc:"Shaken or stirred — the argument never ends",rating:4,diff:1,shake:30,
+ i:[{n:"Vodka",a:2.5,t:"spirit"},{n:"Dry Vermouth",a:0.5,t:"vermouth"}],
+ steps:["Stir or shake with ice until very cold.","Strain into a chilled martini glass.","Garnish with a lemon twist or olive."],
+ garnish:"Lemon twist or olive",tip:"James Bond orders his shaken — professional bartenders say stirred. Stirred is silkier; shaken is colder and diluted differently. Try both. The vermouth is not optional."},
+
+{id:53,base:"Vodka",cat:"Classic",name:"White Russian",desc:"Vodka, Kahlúa, cream — The Dude abides",rating:4,diff:1,shake:0,
+ i:[{n:"Vodka",a:2,t:"spirit"},{n:"Kahlúa",a:1,t:"liqueur"},{n:"Heavy Cream",a:1,t:"cream"}],
+ steps:["Fill a rocks glass with ice.","Add vodka and Kahlúa.","Float the heavy cream over the back of a spoon — pour slowly.","The cream will gradually sink and mix as you drink."],
+ garnish:"None",tip:"The cream float is the whole move — it creates a layered effect that slowly integrates. Don't stir it. Pour fresh cream, not half-and-half. Half the cream makes a Black Russian."},
+
+// ── MORE WHISKEY ──────────────────────────────────────────────
+{id:71,base:"Whiskey",cat:"Classic",name:"Penicillin",desc:"Blended Scotch, lemon, honey-ginger, Islay float",rating:5,diff:3,shake:15,
+ i:[{n:"Blended Scotch",a:2,t:"spirit"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Honey-Ginger Syrup",a:0.75,t:"syrup"},{n:"Islay Scotch",a:0.25,t:"spirit",unit:"float"}],
+ steps:["Shake blended Scotch, lemon juice, and honey-ginger syrup with ice 15 seconds.","Double strain over a large rock.","Float Islay Scotch over the back of a spoon.","Garnish with candied ginger on a cocktail pick."],
+ garnish:"Candied ginger on pick",tip:"Honey-ginger syrup: simmer 2:1 honey to water with sliced fresh ginger 10 minutes, strain. The smoky Islay float (Laphroaig, Ardbeg) hits your nose before the drink hits your lips."},
+
+{id:72,base:"Whiskey",cat:"Stirred",name:"Toronto",desc:"Rye, Fernet Branca, simple syrup — bittersweet and complex",rating:4,diff:1,shake:30,
+ i:[{n:"Rye Whiskey",a:2,t:"spirit"},{n:"Fernet-Branca",a:0.25,t:"liqueur"},{n:"Simple Syrup",a:0.25,t:"syrup"},{n:"Angostura Bitters",a:1,t:"bitters",unit:"dash"}],
+ steps:["Stir all with ice 30 seconds.","Strain into a chilled coupe.","Garnish with an orange twist."],
+ garnish:"Orange twist",tip:"Fernet Branca is intensely bitter and herbal — a little goes a long way. This is essentially a rye Old Fashioned with a menthol-bitter edge. Amaro Nonino makes a gentler version."},
+
+// ── MORE RUM ──────────────────────────────────────────────────
+{id:91,base:"Rum",cat:"Classic",name:"El Presidente",desc:"Aged rum, dry vermouth, Cointreau, grenadine — Cuban classic",rating:5,diff:1,shake:30,
+ i:[{n:"Aged Rum",a:1.5,t:"spirit"},{n:"Dry Vermouth",a:0.75,t:"vermouth"},{n:"Cointreau",a:0.25,t:"liqueur"},{n:"Grenadine",a:0.25,t:"syrup"}],
+ steps:["Stir all with ice in a mixing glass 30 seconds.","Strain into a chilled coupe.","Garnish with an orange twist."],
+ garnish:"Orange twist",tip:"A pre-Prohibition Cuban classic. The dry vermouth makes it surprisingly light and elegant. Use a quality aged rum (Bacardi 8, Mount Gay XO) and real pomegranate grenadine."},
+
+{id:92,base:"Rum",cat:"Tropical",name:"Painkiller",desc:"Dark rum, pineapple, OJ, coconut cream — paradise",rating:4,diff:1,shake:0,
+ i:[{n:"Dark Rum",a:2,t:"spirit"},{n:"Pineapple Juice",a:4,t:"juice"},{n:"Orange Juice",a:1,t:"juice"},{n:"Coconut Cream",a:1,t:"cream"}],
+ steps:["Combine all in a shaker and shake well.","Pour unstrained over crushed ice in a tiki mug.","Grate fresh nutmeg over the top generously.","Garnish with a pineapple slice and cherry."],
+ garnish:"Fresh nutmeg + pineapple + cherry",tip:"The signature drink of the Soggy Dollar Bar in the British Virgin Islands. Pusser's Rum is the traditional choice. The fresh nutmeg on top is not optional — it defines the drink."},
+{id:111,base:"Brandy",cat:"Highball",name:"Chilcano",desc:"Peru's everyday cocktail — pisco, ginger ale, lime, Angostura",rating:5,diff:1,shake:0,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Ginger Ale",a:5,t:"mixer"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Angostura Bitters",a:0.1,t:"bitters"},{n:"Ice",a:0,t:"other"}],
+ steps:["Fill a highball glass with ice","Add pisco and lime juice","Top with cold ginger ale","Add a dash of Angostura bitters","Garnish with a lime wheel and serve immediately"],
+ garnish:"Lime wheel",tip:"Use Inca Kola instead of ginger ale for a uniquely Peruvian twist. Angostura is non-negotiable — it's what separates a Chilcano from a pisco mule."},
+{id:112,base:"Brandy",cat:"Classic",name:"Algarrobina",desc:"Peru's dessert cocktail — carob syrup, pisco, evaporated milk",rating:4,diff:1,shake:15,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Algarrobina Syrup",a:1,t:"syrup"},{n:"Evaporated Milk",a:1.5,t:"other"},{n:"Egg Yolk",a:1,t:"other"},{n:"Cinnamon",a:0,t:"other"}],
+ steps:["Combine pisco, algarrobina, evaporated milk, and egg yolk in shaker","Add ice and shake vigorously for 15 seconds","Double strain into a chilled coupe","Dust with ground cinnamon"],
+ garnish:"Ground cinnamon dusted on top",tip:"Algarrobina is a thick, sweet syrup made from carob pods — find it at Latin grocery stores. If unavailable, substitute dark molasses mixed with a touch of honey as an approximation."},
+{id:113,base:"Brandy",cat:"Highball",name:"Peru Libre",desc:"The Peruvian Cuba Libre — pisco swaps rum, completely transforms it",rating:4,diff:1,shake:0,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Coca-Cola",a:4,t:"mixer"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Ice",a:0,t:"other"}],
+ steps:["Fill a highball glass with ice","Squeeze and drop in the lime wedges","Pour pisco over the ice","Top with Coca-Cola and give one gentle stir","Garnish with a lime wedge"],
+ garnish:"Lime wedge",tip:"Pisco has a distinctly different character than rum — more floral and grape-forward. Use a quebranta-style pisco (neutral, unoaked) for the most authentic version."},
+{id:114,base:"Brandy",cat:"Sour",name:"Maracuyá Sour",desc:"Passion fruit pisco sour — tropical and electric",rating:5,diff:2,shake:15,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Passion Fruit Juice",a:1,t:"juice"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Simple Syrup",a:0.75,t:"syrup"},{n:"Egg White",a:1,t:"other"},{n:"Angostura Bitters",a:0.1,t:"bitters"}],
+ steps:["Dry shake pisco, passion fruit juice, lime, syrup, and egg white without ice for 12 seconds","Add ice and shake hard for another 12 seconds","Double strain into a chilled coupe","Dot with Angostura bitters and drag a toothpick through for the classic pattern"],
+ garnish:"Angostura bitters dots on foam",tip:"The dry shake before ice is what creates a thick, stable foam. Fresh or high-quality frozen passion fruit pulp is far superior to shelf-stable juice here."},
+{id:115,base:"Brandy",cat:"Stirred",name:"Capitán",desc:"Peru's Manhattan — pisco meets sweet vermouth",rating:4,diff:1,shake:0,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Sweet Vermouth",a:1,t:"vermouth"},{n:"Angostura Bitters",a:2,t:"bitters"}],
+ steps:["Combine pisco, sweet vermouth, and bitters in a mixing glass with ice","Stir for 30 full seconds until well chilled","Strain into a chilled coupe or Nick & Nora glass","Express a lemon peel over the drink and discard or drop it in"],
+ garnish:"Expressed lemon peel",tip:"Less well-known than the Manhattan but just as elegant. Use an Italian quebranta pisco — its natural grape character pairs beautifully with vermouth. Don't rush the stir."},
+{id:116,base:"Brandy",cat:"Sour",name:"Lucuma Sour",desc:"Andean superfruit sour — creamy, caramel-like, uniquely Peruvian",rating:4,diff:2,shake:15,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Lúcuma Syrup",a:1,t:"syrup"},{n:"Fresh Lime Juice",a:0.75,t:"juice"},{n:"Egg White",a:1,t:"other"},{n:"Simple Syrup",a:0.25,t:"syrup"}],
+ steps:["Dry shake pisco, lúcuma syrup, lime juice, and egg white without ice for 12 seconds","Add ice and shake hard for another 12 seconds","Double strain into a chilled coupe","Garnish with a lime wheel and a light dusting of cinnamon"],
+ garnish:"Lime wheel + cinnamon dust",tip:"Lúcuma is a Peruvian fruit with notes of sweet potato, maple, and caramel. Find lúcuma powder at Latin grocery stores and make a simple syrup with it. It's unlike anything else."},
+{id:117,base:"Brandy",cat:"Classic",name:"Punto y Coma",desc:"Pisco, Campari, sweet vermouth — Peru's answer to the Negroni",rating:4,diff:1,shake:0,
+ i:[{n:"Pisco",a:1.5,t:"spirit"},{n:"Campari",a:1,t:"liqueur"},{n:"Sweet Vermouth",a:1,t:"vermouth"},{n:"Orange Bitters",a:1,t:"bitters"}],
+ steps:["Combine all ingredients in a mixing glass with ice","Stir for 30 full seconds","Strain into a rocks glass over a large ice cube","Express an orange peel over the surface and drop it in"],
+ garnish:"Orange peel",tip:"A lesser-known Peruvian classic that deserves more attention. Pisco's floral grape notes make it softer and more aromatic than a standard Negroni. Outstanding before dinner."},
+{id:118,base:"Brandy",cat:"Sour",name:"Pisco Punch",desc:"San Francisco's golden era cocktail — pisco, pineapple, citrus",rating:4,diff:1,shake:15,
+ i:[{n:"Pisco",a:2,t:"spirit"},{n:"Pineapple Juice",a:1,t:"juice"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Simple Syrup",a:0.5,t:"syrup"},{n:"Soda Water",a:1,t:"mixer"}],
+ steps:["Shake pisco, pineapple juice, lemon juice, and simple syrup with ice","Strain into a rocks glass or punch cup over ice","Top with a splash of soda water","Garnish with a pineapple wedge and a cherry"],
+ garnish:"Pineapple wedge + cherry",tip:"This was the must-drink cocktail of 1890s San Francisco, made famous by the Bank Exchange saloon. The original recipe used pineapple gum syrup — adding a splash of pineapple juice to your simple syrup approximates it well."},
+
+
+,{id:119,base:"Gin",cat:"Classic",name:"French 75",desc:"A sparkling gin sour topped with Champagne — celebratory and bright.",diff:1,rating:4.7,i:[{n:"Gin",t:"spirit"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Simple Syrup",t:"syrup"},{n:"Champagne",t:"mixer"}],steps:["Combine gin, lemon juice, and simple syrup in a shaker with ice.","Shake well and strain into a Champagne flute.","Top with Champagne and garnish."],garnish:"Lemon twist",tip:"Use fresh lemon juice only. The bubbles do the rest."}
+,{id:120,base:"Gin",cat:"Classic",name:"Bee's Knees",desc:"A Prohibition-era sour sweetened with honey — clean and elegant.",diff:1,rating:4.6,i:[{n:"Gin",t:"spirit"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Honey Syrup",t:"syrup"}],steps:["Combine all ingredients in a shaker with ice.","Shake vigorously for 15 seconds.","Double strain into a chilled coupe."],garnish:"Lemon twist",tip:"Make honey syrup by mixing equal parts honey and warm water. It transforms the drink."}
+,{id:121,base:"Gin",cat:"Sour",name:"Clover Club",desc:"A pre-Prohibition classic — gin, lemon, raspberry, and a silky egg white foam.",diff:2,rating:4.5,i:[{n:"Gin",t:"spirit"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Raspberry Syrup",t:"syrup"},{n:"Egg White",t:"other"}],steps:["Dry shake all ingredients without ice for 10 seconds.","Add ice and shake hard for another 15 seconds.","Double strain into a chilled coupe."],garnish:"3 fresh raspberries",tip:"The dry shake is essential for a proper foam. Don't skip it."}
+,{id:122,base:"Gin",cat:"Classic",name:"Corpse Reviver No. 2",desc:"One of the great brunch cocktails — citrusy, herbal, and a touch absinthe.",diff:2,rating:4.6,i:[{n:"Gin",t:"spirit"},{n:"Cointreau",t:"liqueur"},{n:"Lillet Blanc",t:"vermouth"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Absinthe",t:"spirit"}],steps:["Rinse a chilled coupe with absinthe and discard the excess.","Combine remaining ingredients in a shaker with ice.","Shake and double strain into the rinsed glass."],garnish:"Lemon twist",tip:"Four of these and you won't remember your name. Consider yourself warned."}
+,{id:123,base:"Gin",cat:"Classic",name:"Southside",desc:"A gin mojito — mint, citrus, and botanical gin in perfect harmony.",diff:1,rating:4.4,i:[{n:"Gin",t:"spirit"},{n:"Fresh Lime Juice",t:"juice"},{n:"Simple Syrup",t:"syrup"},{n:"Fresh Mint",t:"other"}],steps:["Muddle mint gently with simple syrup in a shaker.","Add gin, lime juice, and ice.","Shake hard and double strain into a chilled coupe."],garnish:"Fresh mint sprig",tip:"Don't over-muddle the mint — a light press releases the oils without turning it bitter."}
+,{id:124,base:"Gin",cat:"Stirred",name:"Hanky Panky",desc:"A richer, more complex Martini with the bittersweet depth of Fernet-Branca.",diff:2,rating:4.5,i:[{n:"Gin",t:"spirit"},{n:"Sweet Vermouth",t:"vermouth"},{n:"Fernet-Branca",t:"liqueur"}],steps:["Combine all ingredients in a mixing glass with ice.","Stir for 30 seconds until well chilled.","Strain into a chilled coupe."],garnish:"Orange twist",tip:"Fernet is polarizing but essential here. Use just a barspoon — it should whisper, not shout."}
+,{id:125,base:"Rum",cat:"Classic",name:"Rum Old Fashioned",desc:"The whiskey classic reimagined with aged rum — molasses, vanilla, and oak.",diff:1,rating:4.6,i:[{n:"Aged Rum",t:"spirit"},{n:"Demerara Syrup",t:"syrup"},{n:"Angostura Bitters",t:"bitters"}],steps:["Combine rum, syrup, and bitters in a mixing glass with ice.","Stir for 30 seconds until diluted and cold.","Strain over a large ice cube in a rocks glass."],garnish:"Orange peel and cherry",tip:"Demerara syrup is the move here — the molasses notes echo the rum beautifully."}
+,{id:126,base:"Rum",cat:"Tiki",name:"Three Dots and a Dash",desc:"WWII victory cocktail — tropical, layered, and festive.",diff:2,rating:4.5,i:[{n:"Aged Rum",t:"spirit"},{n:"Rhum Agricole",t:"spirit"},{n:"Fresh Lime Juice",t:"juice"},{n:"Orange Juice",t:"juice"},{n:"Honey Syrup",t:"syrup"},{n:"Allspice Dram",t:"liqueur"},{n:"Angostura Bitters",t:"bitters"}],steps:["Combine all ingredients in a shaker with ice.","Shake well and pour unstrained into a tiki mug or tall glass.","Fill with crushed ice."],garnish:"3 cherries and a pineapple frond",tip:"Named after the Morse code for V (victory). Serve with fanfare accordingly."}
+,{id:127,base:"Rum",cat:"Tiki",name:"Zombie",desc:"The legendary Donn Beach tiki creation — powerful, fruity, and dangerously smooth.",diff:3,rating:4.7,i:[{n:"Light Rum",t:"spirit"},{n:"Dark Rum",t:"spirit"},{n:"Overproof Rum",t:"spirit"},{n:"Fresh Lime Juice",t:"juice"},{n:"Fresh Grapefruit Juice",t:"juice"},{n:"Cinnamon Syrup",t:"syrup"},{n:"Grenadine",t:"syrup"},{n:"Angostura Bitters",t:"bitters"}],steps:["Combine all ingredients in a blender or shaker with crushed ice.","Blend briefly or shake and pour into a tall glass.","Top with overproof rum float."],garnish:"Mint sprig and cherry",tip:"Limit two per customer. This is an actual rule at most tiki bars — respect it."}
+,{id:128,base:"Rum",cat:"Tropical",name:"Bahama Mama",desc:"A fruity, tropical blend of rum and juices — vacation in a glass.",diff:1,rating:4.3,i:[{n:"Dark Rum",t:"spirit"},{n:"Coconut Rum",t:"spirit"},{n:"Pineapple Juice",t:"juice"},{n:"Orange Juice",t:"juice"},{n:"Grenadine",t:"syrup"}],steps:["Fill a tall glass with ice.","Add rums and juices and stir gently.","Float grenadine over the top."],garnish:"Pineapple wedge and cherry",tip:"Use good dark rum — it makes a real difference in depth and complexity."}
+,{id:129,base:"Vodka",cat:"Classic",name:"Bloody Mary",desc:"The brunch cocktail — bold, savory, spicy, and deeply satisfying.",diff:2,rating:4.5,i:[{n:"Vodka",t:"spirit"},{n:"Tomato Juice",t:"juice"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Worcestershire Sauce",t:"other"},{n:"Hot Sauce",t:"other"},{n:"Horseradish",t:"other"}],steps:["Combine all ingredients in a shaker with ice.","Roll between the shaker and a glass to mix without over-diluting.","Pour into a tall glass over fresh ice."],garnish:"Celery stalk, lemon wedge, olives",tip:"Build to your own taste — more heat, more citrus, more Worcestershire. Own it."}
+,{id:130,base:"Vodka",cat:"Classic",name:"Lemon Drop",desc:"Sweet, tart, and crystal clear — a cocktail bar classic done right.",diff:1,rating:4.4,i:[{n:"Vodka",t:"spirit"},{n:"Cointreau",t:"liqueur"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Simple Syrup",t:"syrup"}],steps:["Rim a chilled coupe with sugar.","Combine all ingredients in a shaker with ice.","Shake hard and double strain into the prepared glass."],garnish:"Lemon twist",tip:"Use fresh lemon juice. The difference between fresh and bottled is not subtle."}
+,{id:131,base:"Vodka",cat:"Classic",name:"Pornstar Martini",desc:"The most ordered cocktail in the UK — vanilla vodka, passionfruit, and a side of Prosecco.",diff:1,rating:4.6,i:[{n:"Vanilla Vodka",t:"spirit"},{n:"Passoa",t:"liqueur"},{n:"Passionfruit Puree",t:"juice"},{n:"Fresh Lime Juice",t:"juice"},{n:"Vanilla Syrup",t:"syrup"}],steps:["Combine all ingredients in a shaker with ice.","Shake hard for 15 seconds.","Double strain into a chilled martini glass.","Serve with a shot of Prosecco on the side."],garnish:"Half a passionfruit",tip:"Always serve the Prosecco on the side — sip between each sip of the martini. That's the move."}
+,{id:132,base:"Vodka",cat:"Highball",name:"Moscow Mule Royale",desc:"The copper mug classic elevated with a ginger beer upgrade and fresh mint.",diff:1,rating:4.4,i:[{n:"Vodka",t:"spirit"},{n:"Ginger Beer",t:"mixer"},{n:"Fresh Lime Juice",t:"juice"},{n:"Angostura Bitters",t:"bitters"}],steps:["Fill a copper mug with crushed ice.","Add vodka and lime juice and stir briefly.","Top with ginger beer and add bitters on top."],garnish:"Lime wheel and fresh mint",tip:"The copper mug keeps it colder longer. If you don't have one, a tall glass works fine."}
+,{id:133,base:"Whiskey",cat:"Classic",name:"Mint Julep",desc:"The Kentucky Derby classic — bourbon, mint, sugar, and crushed ice.",diff:1,rating:4.5,i:[{n:"Bourbon",t:"spirit"},{n:"Simple Syrup",t:"syrup"},{n:"Fresh Mint",t:"other"}],steps:["Gently muddle mint with simple syrup in a julep cup.","Fill cup with crushed ice.","Pour bourbon over the ice and stir until the cup frosts."],garnish:"Large fresh mint bouquet",tip:"The mint bouquet is not decoration — you smell it with every sip. Pack it generously."}
+,{id:134,base:"Whiskey",cat:"Classic",name:"Rusty Nail",desc:"Scotch and Drambuie — only two ingredients, completely unforgettable.",diff:1,rating:4.4,i:[{n:"Scotch Whisky",t:"spirit"},{n:"Drambuie",t:"liqueur"}],steps:["Fill a rocks glass with a large ice cube.","Add scotch and Drambuie.","Stir briefly to combine."],garnish:"Lemon twist",tip:"The ratio is everything — start 2:1 scotch to Drambuie and adjust. Some prefer it drier."}
+,{id:135,base:"Whiskey",cat:"Classic",name:"Blood and Sand",desc:"A rare equal-parts Scotch classic with cherry, vermouth, and orange.",diff:2,rating:4.4,i:[{n:"Scotch Whisky",t:"spirit"},{n:"Cherry Heering",t:"liqueur"},{n:"Sweet Vermouth",t:"vermouth"},{n:"Orange Juice",t:"juice"}],steps:["Combine all ingredients in a shaker with ice.","Shake well and double strain into a chilled coupe."],garnish:"Orange twist",tip:"Use fresh orange juice. Named after the 1922 Rudolph Valentino film."}
+,{id:136,base:"Whiskey",cat:"Classic",name:"Godfather",desc:"Two ingredients, infinite class — Scotch and amaretto in perfect proportion.",diff:1,rating:4.3,i:[{n:"Scotch Whisky",t:"spirit"},{n:"Amaretto",t:"liqueur"}],steps:["Fill a rocks glass with a large ice cube.","Add Scotch and amaretto.","Stir gently and serve."],garnish:"None — or a single cherry",tip:"Simple is the whole point. Use a Scotch you like — it'll show."}
+,{id:137,base:"Whiskey",cat:"Highball",name:"Lynchburg Lemonade",desc:"Jack Daniel's meets lemonade — a Southern staple that's dangerously drinkable.",diff:1,rating:4.3,i:[{n:"Tennessee Whiskey",t:"spirit"},{n:"Cointreau",t:"liqueur"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Simple Syrup",t:"syrup"},{n:"Lemon-Lime Soda",t:"mixer"}],steps:["Fill a tall glass with ice.","Add whiskey, Cointreau, lemon juice, and syrup.","Top with lemon-lime soda and stir gently."],garnish:"Lemon wheel and cherry",tip:"A crowd-pleaser at every gathering. Make a big batch for parties."}
+,{id:138,base:"Tequila",cat:"Classic",name:"Matador",desc:"Tequila, pineapple, and lime — a tropical riff on the margarita template.",diff:1,rating:4.3,i:[{n:"Tequila",t:"spirit"},{n:"Pineapple Juice",t:"juice"},{n:"Fresh Lime Juice",t:"juice"}],steps:["Combine all ingredients in a shaker with ice.","Shake well and strain into a rocks glass over ice."],garnish:"Pineapple wedge",tip:"Blanco tequila works best here — its fresh agave notes shine with the pineapple."}
+,{id:139,base:"Tequila",cat:"Highball",name:"Batanga",desc:"The Mexican bartender Don Javier's house drink — tequila, Coke, and salt.",diff:1,rating:4.2,i:[{n:"Tequila Blanco",t:"spirit"},{n:"Fresh Lime Juice",t:"juice"},{n:"Coca-Cola",t:"mixer"}],steps:["Salt the rim of a tall glass.","Fill with ice and add lime juice.","Pour in tequila and top with Coke. Stir with the lime."],garnish:"Lime wedge",tip:"Don Javier stirred this with a salt-crusted knife. The salt makes a difference."}
+,{id:140,base:"Tequila",cat:"Tropical",name:"Mexican Firing Squad",desc:"A bold tequila sour with grenadine and bitters — striking in color and flavor.",diff:2,rating:4.5,i:[{n:"Tequila Blanco",t:"spirit"},{n:"Fresh Lime Juice",t:"juice"},{n:"Grenadine",t:"syrup"},{n:"Angostura Bitters",t:"bitters"}],steps:["Combine all ingredients in a shaker with ice.","Shake vigorously and strain into a rocks glass over ice.","Add several heavy dashes of bitters on top."],garnish:"Lime wheel",tip:"Don't be shy with the bitters on top — they bloom through the drink as it sits."}
+,{id:141,base:"Brandy",cat:"Classic",name:"Harvard Cocktail",desc:"A cognac Manhattan — elegant, balanced, and spirit-forward.",diff:1,rating:4.4,i:[{n:"Cognac",t:"spirit"},{n:"Sweet Vermouth",t:"vermouth"},{n:"Angostura Bitters",t:"bitters"},{n:"Simple Syrup",t:"syrup"}],steps:["Combine all ingredients in a mixing glass with ice.","Stir for 30 seconds until cold and diluted.","Strain into a chilled coupe."],garnish:"Lemon twist",tip:"Use a quality cognac — VS works but VSOP brings more depth."}
+,{id:142,base:"Brandy",cat:"Classic",name:"Champs-Élysées",desc:"A Sidecar variation with green Chartreuse — herbal, complex, and stunning.",diff:2,rating:4.6,i:[{n:"Cognac",t:"spirit"},{n:"Green Chartreuse",t:"liqueur"},{n:"Fresh Lemon Juice",t:"juice"},{n:"Simple Syrup",t:"syrup"},{n:"Angostura Bitters",t:"bitters"}],steps:["Combine all ingredients in a shaker with ice.","Shake well and double strain into a chilled coupe."],garnish:"Lemon twist",tip:"Chartreuse is 110 herbs and plants — it's the soul of this drink. Don't substitute."}
+,{id:143,base:"Gin",cat:"Highball",name:"Gin & Tonic",desc:"The eternal classic — botanical gin lifted by tonic water and citrus.",diff:1,rating:4.5,i:[{n:"Gin",t:"spirit"},{n:"Tonic Water",t:"mixer"},{n:"Lime",t:"juice"}],steps:["Fill a large glass with ice — as much as you can fit.","Add gin and squeeze in lime.","Pour tonic slowly over the back of a spoon to preserve carbonation."],garnish:"Lime wheel and fresh herbs",tip:"The ice-to-drink ratio matters enormously. More ice = less dilution = better drink."}
+,{id:144,base:"Rum",cat:"Classic",name:"Corn and Oil",desc:"A Barbadian classic — blackstrap rum, falernum, and bitters. Dark and complex.",diff:1,rating:4.5,i:[{n:"Blackstrap Rum",t:"spirit"},{n:"Falernum",t:"liqueur"},{n:"Angostura Bitters",t:"bitters"},{n:"Fresh Lime Juice",t:"juice"}],steps:["Fill a rocks glass with ice.","Add all ingredients and stir gently to combine."],garnish:"Lime wheel",tip:"The name comes from how the two layers sit in the glass — dark rum floating over golden falernum."}
+,{id:145,base:"Sake",cat:"Classic",name:"Sake Martini",desc:"A clean, delicate martini riff — junmai sake in place of vermouth, gin-forward and floral.",diff:1,rating:4.5,i:[{n:"Gin",a:2,t:"spirit"},{n:"Junmai Sake",a:1,t:"spirit"},{n:"Orange Bitters",a:0.125,t:"bitters"}],steps:["Combine all ingredients in a mixing glass with ice.","Stir for 30 seconds until well chilled.","Strain into a chilled coupe or martini glass."],garnish:"Cucumber ribbon or lemon twist",tip:"Use a dry junmai sake — the cleaner the sake, the more elegant the drink."}
+,{id:146,base:"Sake",cat:"Highball",name:"Sake Spritz",desc:"Light, effervescent, and refreshing — sake lengthened with soda and yuzu.",diff:1,rating:4.4,i:[{n:"Junmai Sake",a:3,t:"spirit"},{n:"Soda Water",a:3,t:"mixer"},{n:"Yuzu Juice",a:0.5,t:"juice"}],steps:["Fill a tall glass with ice.","Add sake and yuzu juice.","Top with club soda and stir gently."],garnish:"Cucumber slice and fresh mint",tip:"Yuzu can be hard to find — fresh lemon juice with a drop of lime works as a backup."}
+,{id:147,base:"Sake",cat:"Sour",name:"Sake Sour",desc:"A bright, citrusy sour built on sake — subtle, silky, and surprisingly complex.",diff:1,rating:4.5,i:[{n:"Junmai Sake",a:2,t:"spirit"},{n:"Fresh Lemon Juice",a:0.75,t:"juice"},{n:"Honey Syrup",a:0.5,t:"syrup"},{n:"Egg White",a:1,t:"other"}],steps:["Dry shake all ingredients without ice for 10 seconds.","Add ice and shake hard for 15 seconds.","Double strain into a chilled coupe."],garnish:"Lemon wheel and a few drops of bitters",tip:"Honey syrup pairs beautifully with sake — its floral notes echo the rice wine's delicate sweetness."}
+,{id:148,base:"Sake",cat:"Stirred",name:"Sake Old Fashioned",desc:"A Japanese spin on the old fashioned — sake, whisky, and a touch of sweetness.",diff:2,rating:4.6,i:[{n:"Japanese Whisky",a:1.5,t:"spirit"},{n:"Junmai Sake",a:1,t:"spirit"},{n:"Demerara Syrup",a:0.25,t:"syrup"},{n:"Angostura Bitters",a:0.125,t:"bitters"}],steps:["Combine all ingredients in a mixing glass with ice.","Stir for 30 seconds until diluted and cold.","Strain over a large ice cube in a rocks glass."],garnish:"Orange peel expressed over the glass",tip:"The sake softens the whisky and adds a subtle umami depth you won't get anywhere else."}
+,{id:149,base:"Sake",cat:"Tropical",name:"Sake Sangria",desc:"A light, fruit-forward sake punch — perfect for a crowd.",diff:1,rating:4.3,i:[{n:"Junmai Sake",a:4,t:"spirit"},{n:"Peach Schnapps",a:1,t:"liqueur"},{n:"White Grape Juice",a:2,t:"juice"},{n:"Fresh Lemon Juice",a:0.5,t:"juice"}],steps:["Combine all ingredients in a pitcher over ice.","Stir gently and let rest for 10 minutes to meld.","Pour into glasses over fresh ice."],garnish:"Sliced peaches and cucumber",tip:"Make this at least 30 minutes ahead — it gets better as it sits."}
+,{id:150,base:"Sake",cat:"Classic",name:"Rising Sun",desc:"Sake and tequila meet in a smoky, citrusy crossover cocktail.",diff:2,rating:4.5,i:[{n:"Junmai Sake",a:1.5,t:"spirit"},{n:"Mezcal",a:0.75,t:"spirit"},{n:"Fresh Lime Juice",a:0.5,t:"juice"},{n:"Agave Syrup",a:0.25,t:"syrup"},{n:"Orange Bitters",a:0.125,t:"bitters"}],steps:["Combine all ingredients in a shaker with ice.","Shake well and strain into a rocks glass over a large ice cube."],garnish:"Lime wheel and sesame salt rim",tip:"The mezcal smoke and sake rice notes create something genuinely unexpected. Don't skip the bitters."}
+,{id:151,base:"Whiskey",cat:"Stirred",name:"Oaxacan Negroni",desc:"A mezcal-bourbon Negroni with chocolate bitters — smoky, rich, and deeply complex.",diff:2,rating:4.7,i:[{n:"Bourbon",a:1,t:"spirit"},{n:"Mezcal",a:0.5,t:"spirit"},{n:"Sweet Vermouth",a:1,t:"vermouth"},{n:"Campari",a:1,t:"liqueur"},{n:"Chocolate Bitters",a:0.125,t:"bitters"}],steps:["Combine all ingredients in a mixing glass with ice.","Stir for 30 seconds until cold and diluted.","Strain into a chilled rocks glass over a large ice cube."],garnish:"Orange twist expressed over the glass",tip:"Chocolate bitters tie the smoke and bitter together. A single dash is all it takes."}
+,{id:152,base:"Rum",cat:"Stirred",name:"Black Forest",desc:"Dark rum, cherry liqueur, and chocolate bitters — a liquid dessert.",diff:1,rating:4.6,i:[{n:"Dark Rum",a:2,t:"spirit"},{n:"Cherry Heering",a:0.75,t:"liqueur"},{n:"Chocolate Bitters",a:0.25,t:"bitters"},{n:"Demerara Syrup",a:0.25,t:"syrup"}],steps:["Combine all ingredients in a mixing glass with ice.","Stir for 30 seconds.","Strain into a chilled coupe or over a large ice cube."],garnish:"Brandied cherry",tip:"This tastes like a Black Forest cake decided to become a cocktail. It made the right call."}
+,{id:153,base:"Whiskey",cat:"Classic",name:"Chocolate Old Fashioned",desc:"The old fashioned elevated — bourbon, chocolate bitters, and mole depth.",diff:1,rating:4.6,i:[{n:"Bourbon",a:2,t:"spirit"},{n:"Demerara Syrup",a:0.25,t:"syrup"},{n:"Chocolate Bitters",a:0.25,t:"bitters"},{n:"Angostura Bitters",a:0.125,t:"bitters"}],steps:["Combine bourbon, syrup, and both bitters in a mixing glass with ice.","Stir for 30 seconds until well chilled.","Strain over a large ice cube in a rocks glass."],garnish:"Orange peel and dark chocolate shaving",tip:"Two bitters is the secret — chocolate brings the depth, Angostura brings the spice. Neither alone is as good."}
+,{id:154,base:"Vodka",cat:"Espresso Martini",name:"Mocha Espresso Martini",desc:"The espresso martini gets a chocolate upgrade — rich, dark, and indulgent.",diff:1,rating:4.7,i:[{n:"Vodka",a:1.5,t:"spirit"},{n:"Kahlúa",a:0.75,t:"liqueur"},{n:"Espresso",a:1,t:"other"},{n:"Chocolate Bitters",a:0.25,t:"bitters"}],steps:["Add all ingredients to a shaker with ice.","Shake very hard for 20 seconds.","Double strain into a chilled coupe."],garnish:"3 espresso beans and a dark chocolate shaving",tip:"The chocolate bitters replace a separate chocolate liqueur — cleaner, more complex, same payoff."}
+,{id:155,base:"Brandy",cat:"Classic",name:"Brandy Crusta",desc:"A pre-Prohibition classic — cognac, orange liqueur, and chocolate bitters in a sugared glass.",diff:2,rating:4.5,i:[{n:"Cognac",a:2,t:"spirit"},{n:"Cointreau",a:0.5,t:"liqueur"},{n:"Fresh Lemon Juice",a:0.5,t:"juice"},{n:"Maraschino Liqueur",a:0.25,t:"liqueur"},{n:"Chocolate Bitters",a:0.125,t:"bitters"}],steps:["Sugar the rim of a coupe and line with a long lemon peel.","Combine remaining ingredients in a shaker with ice.","Shake and strain into the prepared glass."],garnish:"Sugared rim with lemon peel lining",tip:"One of the oldest American cocktails — the Crusta predates the Sidecar by 70 years. Treat it with respect."}
+,{id:156,base:"Gin",cat:"Classic",name:"Chocolate Negroni",desc:"A Negroni with chocolate bitters — adds a dark, earthy depth to the classic.",diff:1,rating:4.6,i:[{n:"Gin",a:1,t:"spirit"},{n:"Sweet Vermouth",a:1,t:"vermouth"},{n:"Campari",a:1,t:"liqueur"},{n:"Chocolate Bitters",a:0.125,t:"bitters"}],steps:["Combine all ingredients in a mixing glass with ice.","Stir for 30 seconds.","Strain into a rocks glass over a large ice cube."],garnish:"Orange twist",tip:"Just a few drops of chocolate bitters rounds the bitterness of the Campari beautifully. Don't overdo it."}];
+
+// ── STATE ────────────────────────────────────────────────────
+let selId={discover:null,spirits:null};
+let srv={}, subCat={}, timers={};
+let showShop=false, showLog=false, logRat=4;
+let curSpiritTab='all',spiritSearchQ='', curSpiritCat='All';
+let discDiff=0, savedTab='recipes';
+let recentlyViewed=[], partyPicks=[];
+let myBar=[], logs={}, saved=[], customIngs=[], notes={}, shopList=[];
+let searchQ="", dCat="All", curPage="discover";
+
+try{myBar=JSON.parse(localStorage.getItem('sg_bar')||'[]');
+  shopList=JSON.parse(localStorage.getItem('sg_shop')||'[]').filter(x=>typeof x==='string');}catch{}
+try{customIngs=JSON.parse(localStorage.getItem('sg_custings')||'[]');}catch{}
+try{recentlyViewed=JSON.parse(localStorage.getItem('sg_recent')||'[]');}catch{}
+try{srv=JSON.parse(localStorage.getItem('sg_srv')||'{}');}catch{}
+try{notes=JSON.parse(localStorage.getItem('sg_notes')||'{}');}catch{}
+// Convert string keys back to numbers
+try{const s2={};Object.keys(srv).forEach(k=>{s2[parseInt(k)]=srv[k];});srv=s2;}catch{}
+try{logs=JSON.parse(localStorage.getItem('sg_logs')||'{}');}catch{}
+try{saved=JSON.parse(localStorage.getItem('sg_saved')||'[]');}catch{}
+
+function saveShopList(){localStorage.setItem('sg_shop',JSON.stringify(shopList));}
+function addToShopList(recipeId){
+  const r=R.find(x=>x&&x.id===recipeId);if(!r)return;
+  const missing=r.i.filter(g=>!myBar.includes(g.n)&&!shopList.includes(g.n));
+  if(missing.length===0){flashMsg('✓ You have everything for this one');return;}
+  missing.forEach(g=>{if(!shopList.includes(g.n))shopList.push(g.n);});
+  saveShopList();
+  flashMsg(missing.length+' item'+(missing.length!==1?'s':'')+' added to Shop list');
+}
+function removeFromShopList(n){
+  shopList=shopList.filter(x=>x!==n);
+  saveShopList();
+  renderSaved();
+}
+function clearShopList(){
+  shopList=[];saveShopList();renderSaved();
+}
+
+function persist(){try{localStorage.setItem('sg_bar',JSON.stringify(myBar));localStorage.setItem('sg_logs',JSON.stringify(logs));localStorage.setItem('sg_saved',JSON.stringify(saved));localStorage.setItem('sg_custings',JSON.stringify(customIngs));localStorage.setItem('sg_recent',JSON.stringify(recentlyViewed));localStorage.setItem('sg_srv',JSON.stringify(srv));localStorage.setItem('sg_notes',JSON.stringify(notes));localStorage.setItem('sg_shop',JSON.stringify(shopList));}catch(e){}}
+
+const ALLS=[...new Set(R.filter(r=>r&&r.i).flatMap(r=>r.i.map(i=>i.n)))].sort();
+const ITM={'Triple Sec':'liqueur'};R.filter(r=>r&&r.i).forEach(r=>r.i.forEach(i=>{if(!ITM[i.n])ITM[i.n]=i.t;}));
+const DCATS=["All",...[...new Set(R.map(r=>r.cat))].filter(Boolean).sort()];
+
+// ── NAVIGATION ───────────────────────────────────────────────
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('on'));
+  const pg=document.getElementById('page-'+id);
+  if(pg)pg.classList.add('on');
+  const activeBtn=document.querySelector('.bnav-btn[data-page="'+id+'"]');
+  if(activeBtn)activeBtn.classList.add('on');
+  curPage=id;
+  if(id==='discover')renderDiscover();
+  else if(id==='spirits')renderSpiritsPage();
+  else if(SPAGES[id])renderSpirit(id);
+  else if(id==='bar')renderBar();
+    else if(id==='saved')renderSaved();
+  else if(id==='generator')renderGenerator();
+  else if(id==='spirits')renderSpiritsPage();
+}
+
+function renderCurPage(){if(curPage==='discover')renderDiscover();else if(SPAGES[curPage])renderSpirit(curPage);}
+
+function surprise(){
+  const r=R[Math.floor(Math.random()*R.length)];
+  selId['spirits']=r.id;
+  srv[r.id]=srv[r.id]||1;
+  if(!timers[r.id])timers[r.id]={left:0,run:false,done:false,int:null};
+  showShop=false;showLog=false;
+  curSpiritTab=r.base;
+  curSpiritCat='All';
+  showPage('spirits');
+  setTimeout(function(){
+    renderDetail('spirits');
+    document.getElementById('spiritsDetail')?.scrollIntoView({behavior:'smooth',block:'start'});
+  },80);
+}
+
+// ── DISCOVER ─────────────────────────────────────────────────
+
+function filterSearch(){
+  searchQ=document.getElementById('searchInput')?.value||'';
+  if(searchQ){
+    // Reset category and difficulty filters so ingredient search works across all recipes
+    dCat='All';discDiff=0;
+    document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('on'));
+    const allChip=document.querySelector('#catChips .chip');if(allChip)allChip.classList.add('on');
+    document.querySelectorAll('#diffChips .chip').forEach((c,i)=>{c.classList.toggle('on',i===0);});
+  }
+  renderDiscGrid();
+}
+function filterSpiritSearch(){spiritSearchQ=norm(document.getElementById('spiritSearchInput')?.value||'');renderSpiritsGrid();}
+
+function renderDiscover(){
+  renderCOTD();
+  renderRecentlyViewed();
+  document.getElementById('catChips').innerHTML=DCATS.map(c=>
+    `<button class="chip ${dCat===c?'on':''}" onclick="dCat='${c}';renderDiscover()">${c}</button>`
+  ).join('');
+  renderDiscGrid();
+}
+
+function setDiscDiff(d){
+  discDiff=d;
+  document.querySelectorAll('#diffChips .chip').forEach(function(b,i){b.classList.toggle('on',i===d);});
+  renderDiscGrid();
+}
+
+
+function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+
+function renderDiscGrid(){
+  const f=R.filter(r=>r&&r.i&&(dCat==='All'||r.cat===dCat)&&(discDiff===0||r.diff===discDiff)&&(()=>{const q=norm(searchQ);return !q||norm(r.name).includes(q)||norm(r.base).includes(q)||r.i.some(x=>norm(x.n).includes(q));})());
+  document.getElementById('discoverGrid').innerHTML=cards(f,'discover')||'<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--muted);font-style:italic">No cocktails found</div>';
+}
+
+// ── SPIRIT PAGES ─────────────────────────────────────────────
+function renderSpirit(pid){
+  const base=SPAGES[pid];
+  const recipes=R.filter(r=>r.base===base);
+  const cats=["All",...[...new Set(recipes.map(r=>r.cat))]];
+  const sc=subCat[pid]||"All";
+  document.getElementById(pid+'Count').textContent=recipes.length+' recipes';
+  document.getElementById(pid+'Sub').innerHTML=cats.map(c=>
+    `<button class="chip ${sc===c?'on':''}" onclick="subCat['${pid}']='${c}';renderSpirit('${pid}')">${c}</button>`
+  ).join('');
+  const f=sc==="All"?recipes:recipes.filter(r=>r.cat===sc);
+  document.getElementById(pid+'Grid').innerHTML=cards(f,pid)||'<div style="grid-column:1/-1;text-align:center;padding:28px;color:var(--muted);font-style:italic">No cocktails found</div>';
+  renderDetail(pid);
+}
+
+// ── CARDS & DETAIL ───────────────────────────────────────────
+function clr(r){if(!r)return'#c9a96e';return SC[r.cat]||SC[r.base]||'#c9a96e';}
+function txtClr(c){return c==='#c9a96e'||c==='#fcd34d'?'#000':'#fff';}
+
+function cards(recipes,pid){
+  if(!recipes||!recipes.length)return'';
+  return recipes.filter(r=>r&&r.id).map(r=>{
+    const c=clr(r),on=selId[pid]===r.id;
+    return`<button class="rcard" data-id="${r.id}" style="${on?`border-color:${c};background:${c}18`:''}" onclick="sel(${r.id},'${pid}')">
+      <div class="rcard-dot" style="background:${c}"></div>
+      <div class="rcard-name" style="font-size:15px">${r.name}</div>
+      <div class="rcard-cat">${r.cat}</div>
+      <div class="rcard-foot">${strs(r.rating)}<span class="badge" style="background:${DC[r.diff]}20;color:${DC[r.diff]}">${DL[r.diff]}</span></div>
+    </button>`;
+  }).join('');
+}
+
+function sel(id,pid){
+  selId[pid]=id;if(!srv[id])srv[id]=1;
+  recentlyViewed=recentlyViewed.filter(x=>x!==id);
+  recentlyViewed.unshift(id);
+  if(recentlyViewed.length>7)recentlyViewed=recentlyViewed.slice(0,7);
+  persist();
+  showShop=false;showLog=false;
+  if(timers[id]){clearInterval(timers[id].int);}
+  timers[id]={left:0,run:false,done:false,int:null};
+  if(pid==='discover')renderDiscGrid();
+  else if(pid==='spirits')renderSpiritsGrid();
+  else renderSpirit(pid);
+  renderDetail(pid);
+  setTimeout(()=>document.getElementById(pid+'Detail')?.scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+
+function renderDetail(pid){
+  try{_renderDetail(pid);}catch(e){console.error('renderDetail error:',e.message);}
+}
+function _renderDetail(pid){
+  const el=document.getElementById(pid+'Detail');if(!el)return;
+  const id=selId[pid];if(!id){el.innerHTML='';return;}
+  const r=R.find(x=>x&&x.id===id);if(!r){el.innerHTML='';return;}
+  const c=clr(r),tc=txtClr(c),s=srv[id]||1;
+  const tot=r.i.reduce((a,x)=>a+(x.a||0)*s,0);
+  const rl=logs[id]||[];const dur=r.shake||20;
+  const tm=timers[id]||{left:0,run:false,done:false};
+  const isSaved=saved.find(x=>x&&x.id===r.id);
+  const circ=2*Math.PI*25,pct=tm.done?1:tm.run?(dur-tm.left)/dur:0;
+
+  el.innerHTML=`<div class="detail" style="border-color:${c}25">
+    <div class="detail-top">
+      <div style="flex:1">
+        <div class="detail-cat" style="color:${c}">${r.base} · ${r.cat}</div>
+        <div class="detail-name" style="font-size:24px">${r.name}</div>
+        <div class="detail-desc">${r.desc}</div>
+        <div class="detail-badges">${strs(r.rating)}<span class="badge" style="background:${DC[r.diff]}20;color:${DC[r.diff]}">${DL[r.diff]}</span>
+          ${(()=>{const abv=calcABV(r,s);return abv?`<span class="badge" style="background:rgba(196,122,42,0.15);color:var(--accent-light)">~${abv}% ABV</span>`:''})()}
+          <button onclick="toggleSave(${r.id})" style="font-size:10px;padding:2px 8px;border-radius:12px;cursor:pointer;border:1px solid ${isSaved?c+'80':'rgba(255,255,255,0.15)'};background:${isSaved?c+'25':'transparent'};color:${isSaved?c:'var(--muted)'};letter-spacing:1px;text-transform:uppercase">${isSaved?'✓ Saved':'+ Save'}</button>
+
+          <button onclick="shareRecipe(${r.id})" style="font-size:10px;padding:2px 8px;border-radius:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--muted);letter-spacing:1px;text-transform:uppercase">↗ Share</button>
+        </div>
+      </div>
+      ${r.shake>0?`<div class="timer-wrap" onclick="startT(${id},${dur},'${pid}')">
+        <div class="timer-ring"><svg width="56" height="56" style="transform:rotate(-90deg)">
+          <circle cx="28" cy="28" r="25" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+          <circle id="arc${id}" cx="28" cy="28" r="25" fill="none" stroke="${c}" stroke-width="4"
+            stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-pct)}" style="transition:stroke-dashoffset 1s linear" stroke-linecap="round"/>
+        </svg><div class="timer-inner" id="tnum${id}" style="color:${tm.done?c:'var(--text)'};font-size:${tm.run?'18px':'13px'}">${tm.done?"✓":tm.run?tm.left:"Go"}</div></div>
+        <div class="timer-lbl" id="tlbl${id}">${tm.done?"Ready":tm.run?"Shaking":"Tap"}</div>
+      </div>`:''}
+    </div>
+
+    <div class="batch-s" style="border:1px solid ${c}20">
+      <div style="font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase">Batch · ~${tot.toFixed(1)} oz total</div>
+      <div class="srv-row">${[1,2,4,6,8,12].map(n=>`<button class="srv-btn" style="${s===n?`background:${c};border-color:${c};color:${tc}`:''}" onclick="setSrv(${id},'${pid}',${n})">${n}</button>`).join('')}<span style="font-size:10px;color:var(--muted)">drinks</span></div>
+    </div>
+
+    <div class="ing-list">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+        <div class="sh" style="margin:0">Ingredients</div>
+        <button onclick="addToShopList(${r.id});showShop=true;renderDetail('${pid}')" style="font-size:9px;color:var(--gold);background:transparent;border:1px solid rgba(201,169,110,0.3);border-radius:6px;padding:3px 8px;cursor:pointer;letter-spacing:1px">🛒 Shop</button>
+      </div>
+      ${r.i.map(g=>{
+        const have=myBar.includes(g.n);
+        const subs=!have?getSub(g.n):null;
+        const ownedSub=subs?subs.find(s=>myBar.some(b=>b.toLowerCase()===s.toLowerCase())):null;
+        return`<div class="ing-row" style="border-left:3px solid ${TC[g.t]||'#888'}">
+          <div style="flex:1;min-width:0">
+            <div class="ing-l"><span style="font-size:13px">${g.n}</span><span class="badge" style="background:${TC[g.t]||'#888'}20;color:${TC[g.t]||'#888'}">${TL[g.t]||g.t}</span>${have?'<span style="color:#10b981;font-size:11px">✓</span>':'<span style="color:#ef444460;font-size:11px">✗</span>'}</div>
+            ${!have&&ownedSub?`<div style="font-size:10px;color:#f59e0b;margin-top:2px;padding-left:1px">↪ sub: ${ownedSub} <span style="color:var(--muted)">(you have this)</span></div>`:''}
+            ${!have&&subs&&!ownedSub?`<div style="font-size:10px;color:var(--muted);margin-top:2px;padding-left:1px">↪ try: ${subs.slice(0,2).join(' or ')}</div>`:''}
+          </div>
+          <div style="text-align:right;flex-shrink:0"><div class="ing-amt" style="color:${c}">${g.unit?`${Math.round(g.a*s)} ${g.unit}`:oz(g.a*s)}</div>${s>1?`<div class="ing-per">${g.unit?`${g.a} ${g.unit}`:oz(g.a)} ×${s}</div>`:''}</div>
+        </div>`;}).join('')}
+    </div>
+
+    ${showShop?`<div class="shop-box"><div style="display:flex;justify-content:space-between;margin-bottom:7px"><div style="font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase">Shopping List</div><button onclick="showShop=false;renderDetail('${pid}')" style="color:var(--muted);background:transparent;border:none;cursor:pointer">✕</button></div>${(()=>{const m=r.i.filter(g=>!myBar.includes(g.n));return m.length===0?'<div style="font-size:13px;color:#10b981;font-style:italic">✓ You have everything!</div>':m.map(g=>`<div style="font-size:13px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)">• ${g.n}</div>`).join('');})()}</div>`:''}
+
+    <div class="steps"><div class="sh">How to Make It</div>${r.steps.map((st,i)=>`<div class="step-row"><div class="step-num" style="background:${c};color:${tc}">${i+1}</div><div class="step-text">${st}</div></div>`).join('')}</div>
+
+    <hr class="divider">
+    <div class="two-col" style="border-bottom:1px solid var(--border)">
+      <div class="tcell"><div class="tcell-label">Garnish</div><div class="tcell-text">${r.garnish}</div></div>
+      <div class="tcell"><div class="tcell-label">Pro Tip</div><div class="tcell-text" style="font-style:italic;color:#9ca3af">${r.tip}</div></div>
+    </div>
+
+    <div class="log-s">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${showLog||rl.length?'9px':'0'}">
+        <div class="sh" style="margin:0">Tasting Log</div>
+        <button onclick="showLog=!showLog;renderDetail('${pid}')" style="font-size:10px;color:${c};background:transparent;border:1px solid ${c}40;border-radius:6px;padding:3px 8px;cursor:pointer;letter-spacing:1px">${showLog?"Cancel":"+ Note"}</button>
+      </div>
+      ${showLog?`<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:9px">
+        <div style="display:flex;gap:2px">${[1,2,3,4,5].map(x=>`<button onclick="logRat=${x};renderDetail('${pid}')" style="font-size:20px;background:transparent;border:none;cursor:pointer;color:${x<=logRat?'#f59e0b':'#374151'}">★</button>`).join('')}</div>
+        <textarea id="logTA" rows="3" placeholder="How did it taste? What would you change?"></textarea>
+        <button onclick="saveLog(${r.id},'${pid}')" style="background:${c};border:none;border-radius:7px;padding:8px;color:${tc};font-size:10px;letter-spacing:3px;text-transform:uppercase;cursor:pointer">Save Note</button>
+      </div>`:''}
+      ${rl.map(l=>`<div class="log-entry"><div style="display:flex;justify-content:space-between;margin-bottom:2px">${strs(l.rating,11)}<span style="font-size:10px;color:var(--muted)">${l.date}</span></div><div class="log-note">${l.note}</div></div>`).join('')}
+    </div>
+
+    <div style="padding:12px 15px 14px;border-top:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="sh" style="margin:0">Bartender Notes</div>
+        ${notes[id]?`<button onclick="deleteNote(${id},'${pid}')" style="font-size:9px;color:#ef4444;background:transparent;border:none;cursor:pointer;letter-spacing:1px">Clear</button>`:''}
+      </div>
+      <textarea id="noteTA${id}" rows="3" placeholder="Your personal notes — substitutions, tweaks, what worked..." style="background:rgba(18,12,4,0.8);border:1px solid rgba(196,122,42,0.2);border-radius:4px;padding:8px 10px;color:var(--text);font-size:13px;resize:none;outline:none;width:100%;font-family:'DM Sans',sans-serif;line-height:1.5">${notes[id]||''}</textarea>
+      <button onclick="saveNote(${id},'${pid}')" style="margin-top:6px;background:rgba(196,122,42,0.15);border:1px solid rgba(196,122,42,0.3);border-radius:4px;color:var(--accent-light);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:7px 14px;cursor:pointer;width:100%">Save Note</button>
+    </div>
+  </div>`;
+}
+
+function setSrv(id,pid,n){srv[id]=n;persist();renderDetail(pid);}
+function startT(id,dur,pid){
+  const tm=timers[id];if(tm&&tm.run)return;
+  timers[id]={left:dur,run:true,done:false,int:null};
+  timers[id].int=setInterval(()=>{
+    timers[id].left--;
+    if(timers[id].left<=0){clearInterval(timers[id].int);timers[id].run=false;timers[id].done=true;}
+    updT(id,dur);
+  },1000);updT(id,dur);
+}
+function updT(id,dur){
+  const tm=timers[id];if(!tm)return;
+  const r=R.find(x=>x.id===id),c=r?clr(r):'#c9a96e';
+  const circ=2*Math.PI*25,pct=tm.done?1:tm.run?(dur-tm.left)/dur:0;
+  const arc=document.getElementById('arc'+id),num=document.getElementById('tnum'+id),lbl=document.getElementById('tlbl'+id);
+  if(arc)arc.style.strokeDashoffset=circ*(1-pct);
+  if(num){num.textContent=tm.done?"✓":tm.run?tm.left:"Go";num.style.color=tm.done?c:'var(--text)';num.style.fontSize=tm.run||tm.done?'18px':'13px';}
+  if(lbl)lbl.textContent=tm.done?"Ready":tm.run?"Shaking":"Tap";
+}
+
+function toggleSave(id){
+  const idx=saved.findIndex(x=>x.id===id);
+  if(idx>=0)saved.splice(idx,1);
+  else{const r=R.find(x=>x.id===id);if(r)saved.push({id:r.id,name:r.name,cat:r.cat,base:r.base});}
+  persist();renderDetail(curPage);if(curPage==='saved')renderSaved();
+}
+function saveLog(id,pid){
+  const note=document.getElementById('logTA')?.value?.trim();if(!note)return;
+  if(!logs[id])logs[id]=[];
+  logs[id].unshift({date:new Date().toLocaleDateString(),rating:logRat,note});
+  logs[id]=logs[id].slice(0,5);persist();showLog=false;renderDetail(pid);
+}
+
+// ── MY BAR ───────────────────────────────────────────────────
+function addCustomIng(){
+  const nameEl=document.getElementById('newIngName');
+  const typeEl=document.getElementById('newIngType');
+  if(!nameEl)return;
+  const name=(nameEl?.value||'').trim();
+  if(!name)return;
+  // Don't add exact duplicates
+  const allNames=[...ALLS,...customIngs.map(c=>c.n)];
+  const isDupe=allNames.some(n=>n.toLowerCase()===name.toLowerCase());
+  if(isDupe){
+    nameEl.style.borderColor='#ef4444';
+    nameEl.placeholder='Already in list — try a different name';
+    setTimeout(()=>{nameEl.style.borderColor='';nameEl.placeholder='Add custom ingredient...';},2000);
+    return;
+  }
+  const t=typeEl?.value||'other';
+  customIngs.push({n:name,t});
+  ITM[name]=t;
+  // Auto-add to bar
+  if(!myBar.includes(name))myBar.push(name);
+  persist();
+  nameEl.value='';
+  renderBar();
+}
+
+function removeCustomIng(name){
+  customIngs=customIngs.filter(c=>c.n!==name);
+  myBar=myBar.filter(b=>b!==name);
+  delete ITM[name];
+  persist();
+  renderBar();
+}
+
+function renderBar(){
+  const mk=R.filter(r=>r.i.every(g=>myBar.includes(g.n)));
+  document.getElementById('barCount').textContent=myBar.length+' items';
+  document.getElementById('mkCount').textContent=mk.length+' recipes';
+  document.getElementById('barGrid').innerHTML=(()=>{
+    const bq=(document.getElementById('barSearch')?.value||'').toLowerCase().trim();
+    return [...ALLS,...customIngs.map(c=>c.n)].sort((a,b)=>a.localeCompare(b)).filter(n=>!bq||n.toLowerCase().includes(bq)).map(n=>{
+    const h=myBar.includes(n),tc=TC[ITM[n]||'other']||'#888';
+    const isCustom=customIngs.some(c=>c.n===n);
+    return`<button class="bar-item" style="${h?`background:${tc}18;border-color:${tc}50`:''}" onclick="togBar('${n.replace(/'/g,"\'")}')">
+      <div style="display:flex;align-items:center;gap:7px;flex:1;min-width:0">
+        <div style="width:6px;height:6px;border-radius:50%;background:${h?tc:'#374151'};flex-shrink:0"></div>
+        <span style="font-size:13px">${n}</span>
+        ${isCustom?`<span style="font-size:7px;letter-spacing:1px;color:var(--accent);border:1px solid rgba(196,122,42,0.35);border-radius:3px;padding:1px 4px;flex-shrink:0">custom</span>`:''}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+        <span class="badge" style="background:${tc}20;color:${tc}">${TL[ITM[n]||'other']||'Other'}</span>
+        ${h?'<span style="color:#10b981;font-size:13px">✓</span>':''}
+        ${isCustom?`<span onclick="event.stopPropagation();removeCustomIng('${n.replace(/'/g,"\'")}');" style="color:#ef4444;font-size:16px;line-height:1;padding:0 2px;cursor:pointer">×</span>`:''}
+      </div>
+    </button>`;
+    }).join('');})();
+  document.getElementById('mkGrid').innerHTML=mk.length===0?
+    `<div class="empty" style="grid-column:1/-1">Check off your bar above to discover what you can make tonight</div>`:
+    mk.map(r=>{const c=clr(r);return`<button class="mkcard" style="background:${c}15;border-color:${c}45" onclick="goTo(${r.id})">
+      <div style="width:5px;height:5px;border-radius:50%;background:${c};margin-bottom:5px"></div>
+      <div style="font-family:'Playfair Display',serif;font-size:15px;margin-bottom:2px">${r.name}</div>
+      <div style="font-size:10px;color:var(--muted);font-style:italic;margin-bottom:5px">${r.base} · ${r.cat}</div>
+      <div style="font-size:10px;color:${c};letter-spacing:1px">→ View</div>
+    </button>`;}).join('');
+
+  // Wire addIngTap every time bar renders — iOS-safe touchend + click
+  var tap=document.getElementById('addIngTap');
+  if(tap&&tap.cloneNode){
+    var newTap=tap.cloneNode(true);
+    if(tap.parentNode){tap.parentNode.replaceChild(newTap,tap);}
+    newTap.addEventListener('touchend',function(e){e.preventDefault();addCustomIng();},{passive:false});
+    newTap.addEventListener('click',function(e){e.preventDefault();addCustomIng();});
+  }
+  var ni=document.getElementById('newIngName');
+  if(ni&&ni.cloneNode){
+    var newNi=ni.cloneNode(true);
+    if(ni.parentNode){ni.parentNode.replaceChild(newNi,ni);}
+    newNi.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();addCustomIng();}});
+  }
+}
+function togBar(n){const i=myBar.indexOf(n);if(i>=0)myBar.splice(i,1);else myBar.push(n);persist();renderBar();}
+function goTo(id){
+  const r=R.find(x=>x&&x.id===id);if(!r)return;
+  selId['discover']=id;srv[id]=1;showShop=false;showLog=false;
+  timers[id]=timers[id]||{left:0,run:false,done:false,int:null};
+  showPage('discover');
+  setTimeout(()=>document.getElementById('discoverDetail')?.scrollIntoView({behavior:'smooth'}),100);
+}
+
+// ── CUSTOM ───────────────────────────────────────────────────
+
+// ── SAVED ────────────────────────────────────────────────────
+function renderShopList(){
+  // Reload from localStorage every time in case it was saved in another context
+  try{shopList=JSON.parse(localStorage.getItem('sg_shop')||'[]').filter(x=>typeof x==='string');}catch(e){}
+  const el=document.getElementById('savedList');
+  if(!el)return;
+  if(!shopList||shopList.length===0){
+    el.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--muted)">
+      <div style="font-size:28px;margin-bottom:12px">🛒</div>
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--accent-light);margin-bottom:8px">Your list is empty</div>
+      <div style="font-size:12px;line-height:1.6">Tap 🛒 on any recipe to add missing ingredients here.</div>
+    </div>`;
+    return;
+  }
+  let html=`<div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:9px;letter-spacing:3px;color:var(--accent);text-transform:uppercase">${shopList.length} Item${shopList.length!==1?'s':''} to Buy</div>
+    <button onclick="clearShopList()" style="font-size:9px;color:var(--muted);background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:4px 10px;cursor:pointer;letter-spacing:1px;text-transform:uppercase">Clear All</button>
+  </div>`;
+  html+=shopList.map(n=>{
+    const safe=n.replace(/'/g,"\'");
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:5px;margin-bottom:6px">
+      <span style="font-size:14px">${n}</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="myBar.push('${safe}');persist();removeFromShopList('${safe}')" style="font-size:9px;color:#10b981;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:3px;padding:3px 8px;cursor:pointer;letter-spacing:1px;text-transform:uppercase">✓ Got it</button>
+        <button onclick="removeFromShopList('${safe}')" style="font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;line-height:1">×</button>
+      </div>
+    </div>`;
+  }).join('');
+  el.innerHTML=html;
+}
+
+function renderSaved(){
+  // Reset tab display state
+  const sl=document.getElementById('savedList');
+  const pp=document.getElementById('partyPlanner');
+  const gp=document.getElementById('glossaryPanel');
+  if(sl)sl.style.display=(savedTab==='recipes'||savedTab==='shop')?'':'none';
+  if(pp)pp.style.display=savedTab==='party'?'':'none';
+  if(gp)gp.style.display=savedTab==='glossary'?'':'none';
+  document.getElementById('savedTabRecipes')?.classList.toggle('on',savedTab==='recipes');
+  document.getElementById('savedTabParty')?.classList.toggle('on',savedTab==='party');
+  document.getElementById('savedTabShop')?.classList.toggle('on',savedTab==='shop');
+  document.getElementById('savedTabGlossary')?.classList.toggle('on',savedTab==='glossary');
+  if(savedTab==='party'){renderPartyPlanner();return;}
+  if(savedTab==='glossary'){renderGlossary();return;}
+  if(savedTab==='shop'){renderShopList();return;}
+  const el=document.getElementById('savedList');
+  if(!saved.length){el.innerHTML=`<div class="empty">Tap + Save on any recipe to save it here. Custom builds also appear here.</div>`;return;}
+  el.innerHTML=saved.filter(sr=>sr&&sr.id).map(sr=>{
+    const r=R.find(x=>x&&x.id===sr.id)||sr;
+    const c=SC[r.cat]||SC[r.base]||'#c9a96e';
+    const clickFn=sr.isCustom?'void 0':'goTo('+r.id+')';
+    return`<div class="saved-card" style="border-color:${c}30" onclick="${clickFn}">
+      <div style="flex:1;pointer-events:none">
+        <div style="font-size:8px;letter-spacing:4px;color:${c};text-transform:uppercase;margin-bottom:2px">${r.base||r.cat}</div>
+        <div style="font-family:'Playfair Display',serif;font-size:17px">${r.name}</div>
+        <div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:2px">${r.desc||''}</div>
+        ${sr.isCustom&&sr.ings?`<div style="font-size:11px;color:var(--gold);margin-top:4px">${sr.ings.map(i=>i.n).join(', ')}</div>`:''}
+      </div>
+      <button onclick="event.stopPropagation();removeSaved('${sr.id}')" style="color:var(--muted);background:transparent;border:none;cursor:pointer;font-size:16px;padding:3px 7px">✕</button>
+    </div>`;
+  }).join('');
+}
+function removeSaved(id){saved=saved.filter(x=>String(x.id)!==String(id));persist();renderSaved();}
+
+// ── COCKTAIL OF THE DAY ──────────────────────────────────────
+function getCOTD(){
+  const today=new Date();
+  const seed=today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDate();
+  const idx=seed % R.length;
+  return R[idx]||R[0];
+}
+
+function renderCOTD(){
+  const el=document.getElementById('cotdPanel');
+  if(!el)return;
+  const r=getCOTD();
+  const c=clr(r);
+  const tc=r.base==='Whiskey'||r.base==='Rum'||r.base==='Tequila'?'#000':'#fff';
+  const canMake=r.i.every(g=>myBar.includes(g.n));
+  el.innerHTML=`<div style="background:linear-gradient(135deg,${c}22 0%,rgba(18,12,4,0.9) 100%);border:1px solid ${c}40;border-radius:6px;padding:16px 15px;position:relative;overflow:hidden;cursor:pointer" onclick="selCOTD(${r.id})">
+    <div style="position:absolute;top:0;right:0;width:120px;height:100%;background:linear-gradient(270deg,${c}15,transparent);pointer-events:none"></div>
+    <div style="font-size:7px;letter-spacing:5px;color:${c};text-transform:uppercase;margin-bottom:6px;font-weight:500">✦ Cocktail of the Day</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;font-style:italic;margin-bottom:3px;color:var(--text)">${r.name}</div>
+    <div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:10px">${r.desc}</div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:${c};background:${c}18;border:1px solid ${c}35;border-radius:3px;padding:3px 8px">${r.base}</span>
+      <span style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:${c};background:${c}18;border:1px solid ${c}35;border-radius:3px;padding:3px 8px">${r.cat}</span>
+      ${canMake?`<span style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#10b981;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:3px;padding:3px 8px">✓ You can make this</span>`:''}
+      <span style="font-size:11px;margin-left:auto;color:${c}">View Recipe →</span>
+    </div>
+  </div>`;
+}
+
+function selCOTD(id){
+  const r=R.find(x=>x.id===id);if(!r)return;
+  selId['discover']=id;srv[id]=1;showShop=false;showLog=false;
+  timers[id]={left:0,run:false,done:false,int:null};
+  renderDiscGrid();
+  renderDetail('discover');
+  setTimeout(()=>document.getElementById('discoverDetail')?.scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+
+// ── BAR GENERATOR ────────────────────────────────────────────
+let genResult=null, genLoading=false;
+
+function renderGenerator(){
+  const el=document.getElementById('genPanel');
+  if(!el)return;
+  const haveCount=myBar.length+customIngs.length;
+  const allOwned=[...myBar,...customIngs.map(c=>c.n)];
+
+  let html=`<div style="background:rgba(18,12,4,0.8);border:1px solid rgba(196,122,42,0.2);border-radius:6px;padding:16px;margin-bottom:14px">
+    <div style="font-size:8px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;font-weight:500">Your Bar (${haveCount} ingredients)</div>`;
+
+  if(haveCount===0){
+    html+=`<div style="font-size:12px;color:var(--muted);font-style:italic">Head to My Bar and check off what you have — then come back here to generate a recipe.</div>`;
+  } else {
+    html+=`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+      ${allOwned.map(n=>{const tc=TC[ITM[n]||'other']||'#888';return`<span style="font-size:10px;padding:3px 8px;background:${tc}15;border:1px solid ${tc}35;border-radius:3px;color:${tc}">${n}</span>`;}).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-style:italic">The generator will create a custom recipe using only what you have on hand.</div>
+    <button id="genBtn" style="background:linear-gradient(135deg,var(--accent),#a85e1a);border:none;border-radius:5px;color:#f0e6d3;font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;padding:11px 20px;cursor:pointer;width:100%;transition:opacity .2s">${genLoading?'Crafting with AI...':'✦ Generate with AI ✦'}</button>`;
+  }
+  html+=`</div>`;
+
+  if(genLoading){
+    html+=`<div style="text-align:center;padding:30px;color:var(--muted)">
+      <div style="font-family:'Playfair Display',serif;font-size:18px;font-style:italic;margin-bottom:8px;color:var(--accent-light)">Consulting the spirits...</div>
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase">AI is crafting your recipe</div>
+    </div>`;
+  }
+
+  if(genResult&&!genLoading){
+    const gr=genResult;
+    const c=SC[gr.cat]||SC[gr.base]||'#c47a2a';
+    html+=`<div style="background:rgba(18,12,4,0.9);border:1px solid ${c}40;border-radius:6px;overflow:hidden;animation:fadeUp .3s ease">
+      <div style="padding:16px 15px 12px;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div style="font-size:7px;letter-spacing:5px;color:${c};text-transform:uppercase;margin-bottom:5px;font-weight:500">✦ Generated Recipe</div>
+        <div style="font-family:'Playfair Display',serif;font-size:24px;font-style:italic;margin-bottom:4px">${gr.name}</div>
+        <div style="font-size:12px;color:var(--muted);font-style:italic;margin-bottom:10px">${gr.desc}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span style="font-size:8px;padding:2px 8px;background:${c}18;border:1px solid ${c}35;border-radius:3px;color:${c};text-transform:uppercase;letter-spacing:1.5px">${gr.style||gr.cat}</span>
+          <button onclick="saveGenResult()" style="font-size:8px;padding:2px 8px;border-radius:3px;cursor:pointer;border:1px solid rgba(196,122,42,0.4);background:rgba(196,122,42,0.12);color:var(--accent-light);letter-spacing:1.5px;text-transform:uppercase;margin-left:auto">+ Save Recipe</button>
+        </div>
+      </div>
+      <div style="padding:12px 15px 4px">
+        <div style="font-size:8px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;font-weight:500">Ingredients</div>
+        ${gr.ingredients.map(ing=>`<div style="display:flex;justify-content:space-between;padding:7px 10px;background:rgba(18,12,4,0.6);border-radius:4px;margin-bottom:4px;border:1px solid rgba(196,122,42,0.1)">
+          <span style="font-size:13px">${ing.name}</span>
+          <span style="font-size:13px;color:${c};font-weight:500">${ing.amount}</span>
+        </div>`).join('')}
+      </div>
+      <div style="padding:8px 15px 14px">
+        <div style="font-size:8px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:8px;font-weight:500">Instructions</div>
+        ${gr.steps.map((s,i)=>`<div style="display:flex;gap:10px;margin-bottom:8px">
+          <div style="width:21px;height:21px;border-radius:50%;background:${c};color:#000;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">${i+1}</div>
+          <div style="font-size:13px;line-height:1.65;color:#c8b89a;padding-top:2px">${s}</div>
+        </div>`).join('')}
+        <div style="margin-top:10px;padding:10px 12px;background:rgba(196,122,42,0.08);border:1px solid rgba(196,122,42,0.2);border-radius:4px">
+          <div style="font-size:8px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:4px;font-weight:500">Garnish</div>
+          <div style="font-size:12px;color:#c8b89a">${gr.garnish}</div>
+        </div>
+        ${gr.tip?`<div style="margin-top:8px;padding:10px 12px;background:rgba(18,12,4,0.6);border-left:2px solid ${c};border-radius:0 4px 4px 0">
+          <div style="font-size:12px;color:var(--muted);font-style:italic;line-height:1.6">${gr.tip}</div>
+        </div>`:''}
+      </div>
+      <div style="padding:4px 15px 14px;border-top:1px solid rgba(255,255,255,0.05)">
+        <button id="regenBtn" style="background:transparent;border:1px solid rgba(196,122,42,0.3);border-radius:4px;color:var(--accent-light);font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:8px 16px;cursor:pointer;width:100%">↻ Generate Another</button>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML=html;
+
+  // Wire up buttons
+  const gb=document.getElementById('genBtn');
+  if(gb)gb.addEventListener('click',function(e){e.preventDefault();if(!genLoading)generateRecipe();});
+  const rb=document.getElementById('regenBtn');
+  if(rb)rb.addEventListener('click',function(e){e.preventDefault();generateRecipe();});
+}
+
+function generateRecipe(){
+  if(genLoading)return;
+  const allOwned=[...myBar,...customIngs.map(c=>c.n)];
+  if(!allOwned.length)return;
+
+  genLoading=true;genResult=null;renderGenerator();
+
+  const prompt=`You are an expert bartender with deep knowledge of cocktail ratios and balance. Create one original, well-balanced cocktail using ONLY ingredients from this bar: ${allOwned.join(', ')}.
+
+You may also assume: ice, water, simple syrup, sugar, salt are always available.
+
+RATIO RULES — follow these strictly:
+- Base spirit: 1.5–2 oz
+- Modifier/liqueur: 0.5–1 oz (never more than the base spirit)
+- Citrus juice: 0.5–0.75 oz if used
+- Sweetener: 0.5–0.75 oz — only if needed for balance, never if a sweet liqueur is already the modifier
+- Bitters: 2–3 dashes only
+- Cream or coconut: 0.5–1 oz max
+- Total recipe: 3–4 oz before dilution (not counting soda toppers)
+- Maximum 5 ingredients. Simpler is better.
+
+STYLE RULES:
+- Citrus present → Shaken
+- No citrus, spirit-forward → Stirred  
+- Soda/mixer topper → Built
+- Choose the style that makes the drink taste best, not just what's technically correct
+
+BALANCE TEST before finalizing: Is there a clear spirit backbone? Is sweetness balanced by acid or bitterness? Would a professional bartender be proud to serve this?
+
+Respond with ONLY valid JSON, no markdown, no preamble, no explanation:
+{
+  "name": "Two or three word cocktail name",
+  "desc": "One evocative sentence — what it tastes like, not just what's in it",
+  "cat": "Sour|Stirred|Highball|Classic|Creamy|Espresso Martini|Tiki|Punch",
+  "style": "Shaken|Stirred|Built",
+  "ingredients": [{"name": "exact ingredient name from bar list", "amount": "e.g. 2 oz or 3/4 oz"}],
+  "steps": ["3 to 5 concise professional steps"],
+  "garnish": "Specific garnish — not just 'garnish'",
+  "tip": "One specific pro tip about this drink — technique, variation, or why the ratio works"
+}`;
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      messages:[{role:'user',content:prompt}]
+    })
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    const text=data.content?.[0]?.text||'';
+    const clean=text.replace(/```json|```/g,'').trim();
+    const recipe=JSON.parse(clean);
+    genResult=recipe;
+    genLoading=false;
+    renderGenerator();
+  })
+  .catch(err=>{
+    console.error('AI gen error:',err);
+    // Fallback to local generator
+    genResult=buildRecipeFromBar(allOwned);
+    genLoading=false;
+    renderGenerator();
+  });
+}
+
+function buildRecipeFromBar(owned){
+  if(!window._genHistory)window._genHistory=[];
+  // Categorize what we have
+  const spirits=owned.filter(n=>(ITM[n]||'other')==='spirit');
+  const liqueurs=owned.filter(n=>(ITM[n]||'other')==='liqueur');
+  const syrups=owned.filter(n=>(ITM[n]||'other')==='syrup');
+  const juices=owned.filter(n=>(ITM[n]||'other')==='juice');
+  const mixers=owned.filter(n=>(ITM[n]||'other')==='mixer');
+  const bitters=owned.filter(n=>(ITM[n]||'other')==='bitters');
+  const vermouths=owned.filter(n=>(ITM[n]||'other')==='vermouth');
+  const creams=owned.filter(n=>(ITM[n]||'other')==='cream');
+
+  const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
+  const has=n=>owned.some(x=>x.toLowerCase().includes(n.toLowerCase()));
+  const rand=()=>Math.random();
+
+  // Build ingredient list and derive recipe style
+  let ings=[], style='Shaken', cat='Classic', name='', desc='', garnish='', tip='';
+
+  // ── DECIDE RECIPE STYLE based on inventory ─────────────────
+  const hasSpirit=spirits.length>0;
+  const hasLiqueur=liqueurs.length>0;
+  const hasCitrus=juices.some(j=>j.toLowerCase().includes('lime')||j.toLowerCase().includes('lemon')||j.toLowerCase().includes('grapefruit'));
+  const hasSoda=mixers.some(m=>m.toLowerCase().includes('soda')||m.toLowerCase().includes('water')||m.toLowerCase().includes('tonic')||m.toLowerCase().includes('ginger'));
+  const hasVermouth=vermouths.length>0;
+  const hasCream=creams.length>0;
+  const hasEspresso=owned.some(n=>n.toLowerCase().includes('espresso')||n.toLowerCase().includes('coffee')||n.toLowerCase().includes('cold brew'));
+  const hasCoffeeLiqueur=liqueurs.some(n=>n.toLowerCase().includes('kahlúa')||n.toLowerCase().includes('tia maria')||n.toLowerCase().includes('mr. black'));
+  const hasWhiskey=spirits.some(n=>n.toLowerCase().includes('bourbon')||n.toLowerCase().includes('rye')||n.toLowerCase().includes('whiskey')||n.toLowerCase().includes('scotch'));
+  const hasVodka=spirits.some(n=>n.toLowerCase().includes('vodka'));
+  const hasGin=spirits.some(n=>n.toLowerCase().includes('gin'));
+  const hasTequila=spirits.some(n=>n.toLowerCase().includes('tequila')||n.toLowerCase().includes('mezcal'));
+  const hasRum=spirits.some(n=>n.toLowerCase().includes('rum'));
+  const hasCognac=spirits.some(n=>n.toLowerCase().includes('cognac')||n.toLowerCase().includes('brandy')||n.toLowerCase().includes('pisco')||n.toLowerCase().includes('calvados'));
+
+  // ── ROUTE TO BEST RECIPE TEMPLATE ──────────────────────────
+  // Build list of viable routes then shuffle to pick randomly
+  const viableRoutes=[];
+  if(hasEspresso&&(hasVodka||hasCoffeeLiqueur)) viableRoutes.push('espresso');
+  if(hasCitrus&&hasSpirit) viableRoutes.push('sour');
+  if(hasSoda&&hasSpirit) viableRoutes.push('highball');
+  if(hasVermouth&&hasSpirit) viableRoutes.push('stirred');
+  if(hasCream&&(hasLiqueur||hasSpirit)) viableRoutes.push('creamy','creamy'); // weighted
+  if(hasSpirit&&hasLiqueur) viableRoutes.push('spirit_liq','spirit_liq','spirit_liq'); // weighted
+  if(hasSpirit) viableRoutes.push('fallback');
+  // Shuffle and pick — avoid last used route
+  const lastRoute=window._lastRoute||'';
+  const shuffled=viableRoutes.filter(r=>r!==lastRoute||viableRoutes.length===1).sort(()=>Math.random()-0.5);
+  const chosenRoute=shuffled[0]||'fallback';
+  window._lastRoute=chosenRoute;
+
+  if(chosenRoute==='espresso'){
+    // Espresso martini variation
+    const baseSpirit=spirits.find(n=>n.toLowerCase().includes('vodka'))||spirits[0];
+    const coffeeLiq=liqueurs.find(n=>n.toLowerCase().includes('kahlúa')||n.toLowerCase().includes('tia maria')||n.toLowerCase().includes('mr. black'));
+    const espresso=owned.find(n=>n.toLowerCase().includes('espresso')||n.toLowerCase().includes('coffee')||n.toLowerCase().includes('cold brew'));
+    ings=[{name:baseSpirit,amount:'2 oz'}];
+    if(coffeeLiq)ings.push({name:coffeeLiq,amount:'1 oz'});
+    if(espresso)ings.push({name:espresso,amount:'1 oz'});
+    const extraLiq=liqueurs.filter(n=>n!==coffeeLiq&&!n.toLowerCase().includes('kahlúa'));
+    if(extraLiq.length&&rand()>0.4)ings.push({name:pick(extraLiq),amount:'½ oz'});
+    if(syrups.length&&rand()>0.5)ings.push({name:pick(syrups),amount:'¼ oz'});
+    if(creams.length&&rand()>0.6)ings.push({name:pick(creams),amount:'½ oz'});
+    style='Shaken';cat='Espresso Martini';
+    const adj=pick(['Midnight','Velvet','After Dark','Noir','Twilight','Obsidian','Ghost','Phantom','Dark Matter','Shadow','Eclipse','Smoke']);
+    const sfx=pick(['Espresso','Martini','Shot','Ritual','Elixir','Blend']);
+    name=adj+' '+sfx;
+    desc='A complex, aromatic take on the espresso martini built from your bar.';
+    garnish='3 espresso beans';
+    tip='Shake very hard for 20–25 seconds. Cool espresso is essential — warm espresso kills the foam.';
+
+  } else if(chosenRoute==='sour'){
+    // Sour or citrus build
+    const baseSpirit=pick(spirits);
+    ings=[{name:baseSpirit,amount:'2 oz'}];
+    const citrus=juices.find(j=>j.toLowerCase().includes('lime')||j.toLowerCase().includes('lemon'))||juices[0];
+    ings.push({name:citrus,amount:'¾ oz'});
+    if(syrups.length)ings.push({name:pick(syrups),amount:'½ oz'});
+    else ings.push({name:'Simple Syrup',amount:'½ oz'});
+    if(liqueurs.length&&rand()>0.5)ings.push({name:pick(liqueurs),amount:'½ oz'});
+    if(bitters.length&&rand()>0.6)ings.push({name:pick(bitters),amount:'2 dashes',unit:'dashes'});
+    style='Shaken';cat='Sour';
+    const adj=pick(['Golden','Bright','Gilded','Amber','Burnished','Copper','Citrus','Sharp','Clean','Sunlit','Fresh','Electric']);
+    const noun=pick(['Dusk','Hour','Light','Side','Fix','Twist','Sour','Flash','Fade','Spark','Bite','Drop']);
+    name=adj+' '+noun;
+    desc='A bright, citrus-forward drink with depth from your bar.';
+    garnish=citrus.toLowerCase().includes('lime')?'Lime wheel':'Lemon wheel';
+    tip='Double strain for a clean, professional finish. Taste before serving — balance the sweet and sour to your preference.';
+
+  } else if(chosenRoute==='highball'){
+    // Highball
+    const baseSpirit=pick(spirits);
+    const mixer=pick(mixers.filter(m=>m.toLowerCase().includes('soda')||m.toLowerCase().includes('water')||m.toLowerCase().includes('tonic')||m.toLowerCase().includes('ginger')))||pick(mixers);
+    ings=[{name:baseSpirit,amount:'2 oz'}];
+    if(juices.length)ings.push({name:pick(juices),amount:'½ oz'});
+    if(syrups.length&&rand()>0.5)ings.push({name:pick(syrups),amount:'¼ oz'});
+    if(bitters.length&&rand()>0.6)ings.push({name:pick(bitters),amount:'2 dashes',unit:'dashes'});
+    ings.push({name:mixer,amount:'3–4 oz'});
+    style='Built';cat='Highball';
+    const adj=pick(['Easy','Long','Still','Sunday','Slow','Quiet','Cool','Open','Breezy','Smooth','Lazy','Low']);
+    const noun=pick(['Pour','Evening','Session','Drift','Fade','Hour','Stretch','Side','Float','Run','Day','Current']);
+    name=adj+' '+noun;
+    desc='A long, easy-drinking highball built to your bar.';
+    garnish='Citrus wheel or wedge';
+    tip='Keep the ice as large as possible and pour the mixer very slowly to preserve carbonation.';
+
+  } else if(chosenRoute==='stirred'){
+    // Stirred / spirit-forward
+    const baseSpirit=pick(spirits);
+    ings=[{name:baseSpirit,amount:'2 oz'}];
+    ings.push({name:pick(vermouths),amount:'1 oz'});
+    if(liqueurs.length&&rand()>0.5)ings.push({name:pick(liqueurs),amount:'½ oz'});
+    if(bitters.length)ings.push({name:pick(bitters),amount:'2 dashes',unit:'dashes'});
+    style='Stirred';cat='Stirred';
+    const adj=pick(['The Late','The Still','The Quiet','The Dark','The Last','The Long','The Deep','The Slow','The Cold','The Low','The Far','The Old']);
+    const noun=pick(['Shift','Call','Round','Watch','Hand','Measure','Glass','Hour','Night','Move','Turn','Draw']);
+    name=adj+' '+noun;
+    desc='A spirit-forward, stirred drink with complexity and depth.';
+    garnish='Expressed citrus peel';
+    tip='Stir for 30 full seconds over large ice. Taste for dilution — it should feel silky, not watery.';
+
+  } else if(chosenRoute==='creamy'){
+    // Creamy / dessert
+    const baseSpirit=hasSpirit?pick(spirits):null;
+    const liq=pick(liqueurs);
+    if(baseSpirit)ings.push({name:baseSpirit,amount:'1½ oz'});
+    ings.push({name:liq,amount:'1 oz'});
+    ings.push({name:pick(creams),amount:'1 oz'});
+    if(syrups.length&&rand()>0.5)ings.push({name:pick(syrups),amount:'¼ oz'});
+    style='Shaken';cat='Classic';
+    const adj=pick(['Silk','Velvet','Cloud','Dusk','Ivory','Cream','White','Soft','Pale','Sweet','Rich','Satin']);
+    const noun=pick(['Dream','Hour','Curtain','Veil','Fade','Smoke','Night','Spell','Touch','Drift','Rest','Gloss']);
+    name=adj+' '+noun;
+    desc=pick(['A rich, indulgent after-dinner cocktail from your bar.','Dessert you can sip. No fork required.','A nightcap with serious intentions.','Silky, complex, and deeply satisfying.','The drink the evening has been building toward.']);
+    garnish='Fresh grated nutmeg or cocoa powder';
+    tip='Shake extra hard to fully incorporate the cream. Serve immediately while cold.';
+
+  } else if(chosenRoute==='spirit_liq'){
+    // Spirit + liqueur build
+    const baseSpirit=pick(spirits);
+    const liq=pick(liqueurs);
+    ings=[{name:baseSpirit,amount:'1½ oz'},{name:liq,amount:'¾ oz'}];
+    if(juices.length)ings.push({name:pick(juices),amount:'½ oz'});
+    if(syrups.length&&rand()>0.5)ings.push({name:pick(syrups),amount:'¼ oz'});
+    if(bitters.length&&rand()>0.6)ings.push({name:pick(bitters),amount:'2 dashes',unit:'dashes'});
+    style=rand()>0.5?'Shaken':'Stirred';cat='Classic';
+    const adj=pick(['The','A','One','Last','First','Pure','Another','Each','Every','Any','No','This']);
+    const noun=pick(['Night','Call','Pour','Measure','Round','Glass','Reason','Way','Rule','Choice','Move','Thought']);
+    name=adj+' '+noun;
+    desc=pick(['A balanced two-spirit build that makes the most of your bar.','An elegant pairing that lets both spirits speak.','Bold character, carefully balanced.','A house cocktail worth repeating.','Two bottles, one idea, perfectly executed.']);
+    garnish='Citrus peel or cocktail cherry';
+    tip='Taste as you build — the ratio between spirit and liqueur is everything. Adjust to your palate.';
+
+  } else {
+    // Fallback
+    const baseSpirit=hasSpirit?pick(spirits):pick(owned);
+    ings=[{name:baseSpirit,amount:'2 oz'}];
+    if(owned.length>1){
+      const second=owned.find(n=>n!==baseSpirit);
+      if(second)ings.push({name:second,amount:'1 oz'});
+    }
+    style='Stirred';cat='Classic';
+    name='The Honest Pour';
+    desc='Sometimes simplicity is the whole point.';
+    garnish='Expressed citrus peel';
+    tip='When in doubt, let the spirit speak for itself. Great ice and a cold glass make all the difference.';
+  }
+
+  // Steps based on style
+  const steps=style==='Shaken'
+    ?['Add all ingredients to a cocktail shaker.','Fill with ice and shake hard for 15 seconds.','Double strain into a chilled glass.']
+    :style==='Stirred'
+    ?['Combine all ingredients in a mixing glass.','Add ice and stir for 30 seconds until cold and diluted.','Strain into a chilled glass over a large ice cube.']
+    :['Fill your glass with ice.','Add ingredients in order listed.','Stir gently and garnish.'];
+
+  // Avoid repeating recent names — regenerate name if it was recent
+  let attempts=0;
+  while(window._genHistory.includes(name)&&attempts<8){
+    // Re-roll the name using the same pools
+    const a2=['Midnight','Golden','Easy','Silk','Late','Pure','Dark','Bright','Long','Velvet','Quiet','Amber'];
+    const n2=['Pour','Dusk','Round','Dream','Night','Glass','Shift','Hour','Session','Fade','Call','Veil'];
+    name=pick(a2)+' '+pick(n2);
+    attempts++;
+  }
+  window._genHistory.push(name);
+  if(window._genHistory.length>6)window._genHistory.shift();
+
+  return {name,desc,cat,style,ingredients:ings,steps,garnish,tip};
+}
+
+
+function saveGenResult(){
+  if(!genResult)return;
+  saved.push({
+    id:'g'+Date.now(),
+    name:genResult.name,
+    cat:genResult.cat||'Custom',
+    base:'Custom',
+    isCustom:true,
+    desc:genResult.desc,
+    ings:genResult.ingredients.map(i=>({n:i.name,a:1,t:'other'})),
+    steps:genResult.steps,
+    garnish:genResult.garnish,
+    tip:genResult.tip||''
+  });
+  persist();
+  const btn=document.querySelector('[onclick="saveGenResult()"]');
+  if(btn){btn.textContent='✓ Saved';btn.style.color='#10b981';btn.style.borderColor='rgba(16,185,129,0.4)';}
+}
+
+
+
+function renderRecentlyViewed(){
+  const el=document.getElementById('recentSection');
+  if(!el||!recentlyViewed.length)return;
+  const recipes=recentlyViewed.map(id=>R.find(r=>r.id===id)).filter(Boolean);
+  if(!recipes.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="sh-row" style="margin-bottom:8px"><div class="sh" style="margin:0">Recently Viewed</div></div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none">
+      ${recipes.map(r=>{const c=clr(r);return`<button onclick="selCOTD(${r.id})" style="flex:0 0 auto;width:130px;background:rgba(18,12,4,0.8);border:1px solid ${c}35;border-radius:5px;padding:10px;text-align:left;color:var(--text);cursor:pointer">
+        <div style="width:4px;height:4px;border-radius:50%;background:${c};margin-bottom:6px"></div>
+        <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:13px;line-height:1.2;margin-bottom:3px">${r.name}</div>
+        <div style="font-size:9px;color:${c};text-transform:uppercase;letter-spacing:1px">${r.base}</div>
+      </button>`;}).join('')}
+    </div>`;
+}
+
+
+// ── SPIRITS PAGE ──────────────────────────────────────────────
+function setSpiritTab(base){
+  curSpiritTab=base;curSpiritCat='All';
+  document.querySelectorAll('#spiritTabBtns .chip').forEach(b=>{
+    b.classList.toggle('on',b.dataset.spirit===base);
+  });
+  renderSpiritsPage();
+}
+
+function renderSpiritsGrid(){renderSpiritsPage();}
+function renderSpiritsPage(){
+  const base=curSpiritTab;
+  const filtered=base==='all'?R:R.filter(r=>r.base===base);
+  // Sub-category chips
+  const cats=['All',...new Set(filtered.map(r=>r.cat))].sort((a,b)=>a==='All'?-1:1);
+  document.getElementById('spiritCatChips').innerHTML=cats.map(c=>
+    `<button class="chip${c===curSpiritCat?' on':''}" onclick="setSpiritCat('${c}')">${c}</button>`
+  ).join('');
+  const show=curSpiritCat==='All'?filtered:filtered.filter(r=>r.cat===curSpiritCat);
+  document.getElementById('spiritsGrid').innerHTML=cards(show,'spirits');
+}
+
+function setSpiritCat(cat){
+  curSpiritCat=cat;
+  renderSpiritsPage();
+}
+
+
+
+
+// ── PARTY PLANNER ─────────────────────────────────────────────
+try{partyPicks=JSON.parse(localStorage.getItem('sg_party')||'[]');}catch{}
+
+function setSavedTab(t){
+  savedTab=t;
+  renderSaved();
+}
+
+function togglePartyPick(id){
+  if(partyPicks.includes(id))partyPicks=partyPicks.filter(x=>x!==id);
+  else partyPicks.push(id);
+  localStorage.setItem('sg_party',JSON.stringify(partyPicks));
+  renderPartyPlanner();
+}
+
+function renderPartyPlanner(){
+  const el=document.getElementById('partyPlanner');if(!el)return;
+  const allR=[...R,...saved.filter(s=>s.ings)];
+  let html=`<div class="sh" style="margin-bottom:10px">Pick drinks for your party</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:16px">
+      ${R.map(r=>{const c=clr(r),on=partyPicks.includes(r.id);return`<button onclick="togglePartyPick(${r.id})" style="background:${on?c+'22':'rgba(18,12,4,0.7)'};border:1px solid ${on?c+'60':'rgba(196,122,42,0.15)'};border-radius:5px;padding:10px;text-align:left;cursor:pointer;color:var(--text);transition:all .2s">
+        <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:13px;margin-bottom:3px;line-height:1.2">${r.name}</div>
+        <div style="font-size:9px;color:${on?c:'var(--muted)'};text-transform:uppercase;letter-spacing:1px">${r.base}</div>
+        ${on?`<div style="font-size:10px;color:${c};margin-top:4px">✓ Selected</div>`:''}
+      </button>`;}).join('')}
+    </div>`;
+
+  if(partyPicks.length>0){
+    // Aggregate ingredients across selected drinks — default to 1 serving each
+    const ingMap={};
+    partyPicks.forEach(id=>{
+      const r=R.find(x=>x.id===id);if(!r)return;
+      r.i.forEach(ing=>{
+        if(!ingMap[ing.n])ingMap[ing.n]={amt:0,unit:'oz',t:ing.t};
+        ingMap[ing.n].amt+=ing.a;
+      });
+    });
+    const sortedIngs=Object.entries(ingMap).sort((a,b)=>a[0].localeCompare(b[0]));
+    const haveAll=sortedIngs.every(([n])=>myBar.includes(n));
+    html+=`<div style="background:rgba(18,12,4,0.8);border:1px solid rgba(196,122,42,0.25);border-radius:6px;padding:14px">
+      <div style="font-size:8px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:10px;font-weight:500">Shopping List — ${partyPicks.length} drink${partyPicks.length>1?'s':''}</div>
+      ${sortedIngs.map(([n,{amt,t}])=>{
+        const have=myBar.includes(n);
+        const tc=TC[t||'other']||'#888';
+        return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:${have?'rgba(16,185,129,0.08)':'rgba(18,12,4,0.6)'};border-radius:4px;margin-bottom:4px;border:1px solid ${have?'rgba(16,185,129,0.2)':'rgba(196,122,42,0.1)'}">
+          <span style="font-size:13px;color:${have?'#10b981':'var(--text)'}">${have?'✓ ':''}${n}</span>
+          <span style="font-size:12px;color:${tc};font-weight:500">${Math.round(amt*10)/10} oz</span>
+        </div>`;
+      }).join('')}
+      <div style="margin-top:10px;font-size:10px;color:var(--muted);font-style:italic">Green = you already have it · White = need to buy</div>
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+
+
+// ── BARTENDER NOTES ──────────────────────────────────────────
+function saveNote(id,pid){
+  const ta=document.getElementById('noteTA'+id);
+  if(!ta)return;
+  const val=ta.value.trim();
+  if(val)notes[id]=val;
+  else delete notes[id];
+  persist();
+  // Visual feedback
+  ta.style.borderColor='var(--accent)';
+  setTimeout(()=>{ta.style.borderColor='rgba(196,122,42,0.2)';},1000);
+}
+
+function deleteNote(id,pid){
+  delete notes[id];
+  persist();
+  renderDetail(pid);
+}
+
+// ── SHARE RECIPE ─────────────────────────────────────────────
+function shareRecipe(id){
+  const r=R.find(x=>x.id===id);if(!r)return;
+  const s=srv[id]||1;
+  const lines=[
+    '🍸 '+r.name,
+    r.desc,
+    '',
+    'INGREDIENTS'+(s>1?' (×'+s+')':''),
+    ...r.i.map(g=>'  • '+(g.unit?Math.round(g.a*s)+' '+g.unit:oz(g.a*s))+' '+g.n),
+    '',
+    'HOW TO MAKE IT',
+    ...r.steps.map((st,i)=>(i+1)+'. '+st),
+    '',
+    'Garnish: '+r.garnish,
+    '',
+    '— Made with Spirit Guide'
+  ];
+  const text=lines.join('\n');
+  if(navigator.share){
+    navigator.share({title:r.name,text}).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>{
+      const btn=document.querySelector('[onclick="shareRecipe('+id+')"]');
+      if(btn){btn.textContent='✓ Copied';setTimeout(()=>{btn.textContent='↗ Share';},1500);}
+    });
+  }
+}
+
+
+// ── TECHNIQUE GLOSSARY ────────────────────────────────────────
+const TECHNIQUES=[
+  {term:"Dry Shake",cat:"Technique",desc:"Shaking a cocktail WITHOUT ice first. Used when a recipe has egg white or aquafaba. The dry shake emulsifies the proteins and creates a thick, stable foam. After dry shaking 10–12 seconds, add ice and shake again for chilling and dilution."},
+  {term:"Double Strain",cat:"Technique",desc:"Pouring through both a Hawthorne strainer AND a fine mesh strainer simultaneously. Catches ice chips, citrus pulp, and small herb fragments. Produces a crystal-clear drink with a clean mouthfeel. Essential for sours and anything with citrus."},
+  {term:"Express / Expressed Peel",cat:"Garnish",desc:"Holding a citrus peel (lemon, orange, grapefruit) skin-side down over the drink and giving it a sharp bend. The pressure releases a fine mist of essential oils onto the surface of the cocktail, adding intense aroma. Then run the peel around the rim before dropping it in or discarding."},
+  {term:"Stir, Don't Shake",cat:"Technique",desc:"Spirit-forward cocktails (Martinis, Manhattans, Negronis) should be stirred, not shaken. Stirring chills and dilutes without introducing air bubbles or cloudiness. Shaking bruises the spirit and changes the texture. Stir for 30 full seconds with large ice in a mixing glass."},
+  {term:"Fat Wash",cat:"Technique",desc:"Infusing a spirit with a fat (butter, bacon fat, coconut oil, sesame oil) by combining them, letting them mingle, then freezing to solidify the fat and straining it out. The fat pulls flavor compounds into the spirit and leaves behind a silky texture. Classic example: brown butter bourbon."},
+  {term:"Orgeat",cat:"Ingredient",desc:"A sweet syrup made from almonds, sugar, and orange flower water. Essential in tiki drinks like the Mai Tai. Has a rich, nutty, floral flavor with no alcohol. Can be substituted with almond syrup in a pinch, but the result will be simpler. Look for Small Hand Foods or Liquid Alchemist brands."},
+  {term:"Simple Syrup",cat:"Ingredient",desc:"Sugar dissolved in water. Standard ratio is 1:1 (equal parts). Rich simple syrup is 2:1 sugar to water — sweeter and more viscous, better for cocktails where you want more sweetness with less dilution. Making it at home takes 2 minutes: combine and stir until dissolved. No heat necessary."},
+  {term:"Honey Syrup",cat:"Ingredient",desc:"Honey thinned with warm water so it incorporates into cocktails without clumping. Standard ratio is 3:1 honey to water. Adds floral, complex sweetness that plain sugar can't replicate. Essential in the Bee's Knees and Penicillin. Different honeys (buckwheat, orange blossom, wildflower) change the character significantly."},
+  {term:"Falernum",cat:"Ingredient",desc:"A sweet, spiced Caribbean syrup or liqueur with notes of almond, ginger, clove, and lime zest. Essential in many tiki cocktails. The alcoholic version (John D. Taylor's Velvet Falernum) is most common. Adds exotic, spiced depth. If unavailable, orgeat plus a dash of allspice dram is a loose approximation."},
+  {term:"Float",cat:"Technique",desc:"Pouring a small amount of a spirit or wine over the back of a spoon held just above the surface of a drink, so it rests on top rather than mixing in. Creates a layered visual effect and a burst of that flavor on the first sip. Used for dark rum floats (Dark & Stormy), red wine floats (New York Sour), and Islay Scotch floats (Penicillin)."},
+  {term:"Rinse",cat:"Technique",desc:"Pouring a small amount (typically ¼ oz) of a strongly flavored spirit or liqueur into a chilled glass, swirling to coat the interior, then discarding the excess before adding the main cocktail. Used classically in the Sazerac (absinthe rinse) to add aroma without overpowering. Leaves just a film of flavor."},
+  {term:"Muddle",cat:"Technique",desc:"Pressing fresh ingredients (mint, citrus, berries, jalapeño) in the bottom of a glass or shaker using a muddler. For mint: press GENTLY to release oils — don't shred the leaves or it turns bitter. For citrus wedges: press firmly to release juice. For jalapeño: crush completely to release heat."},
+  {term:"Demerara Syrup",cat:"Ingredient",desc:"Simple syrup made with Demerara sugar instead of white sugar. Has a richer, more complex molasses flavor with notes of toffee and caramel. 2:1 ratio is standard. Superior in rum cocktails, Old Fashioneds, and anything where you want more depth than plain syrup provides."},
+  {term:"Mise en Place",cat:"Technique",desc:"A culinary term meaning 'everything in its place' — setting out all your bottles, tools, glasses, ice, garnishes, and measured ingredients before you start. Critical for batching or making multiple cocktails. A professional habit that prevents mistakes, forgotten ingredients, and having to hunt for something while your ice melts."},
+  {term:"Build in Glass",cat:"Technique",desc:"Adding ingredients directly to the serving glass rather than a shaker or mixing glass. Used for highballs (Moscow Mule, Gin & Tonic), Old Fashioneds, and any drink where you want to preserve carbonation or keep things simple. Stir gently with a bar spoon rather than shaking."},
+  {term:"Carbonation Preservation",cat:"Technique",desc:"When building a sparkling cocktail, always add the carbonated element last and pour slowly down the side of the glass. Never shake a carbonated ingredient. Stir only once or twice with a bar spoon. Use cold glassware. Ice should be large and dense — smaller ice melts faster and over-dilutes."},
+  {term:"Chilling a Glass",cat:"Technique",desc:"Fill the serving glass with ice water (or put it in the freezer) while you make the drink. A cold glass keeps the cocktail colder longer and slightly slows dilution. Standard for Martinis, Manhattans, and anything served 'up' (without ice). Takes only 1–2 minutes with ice water — no advance planning needed."},
+  {term:"Peychaud's vs Angostura",cat:"Ingredient",desc:"The two essential cocktail bitters. Angostura (from Trinidad) is dark, complex, herbal, with notes of clove and cinnamon — the standard for Old Fashioneds and Manhattans. Peychaud's (from New Orleans) is lighter, more floral and anise-forward, with a bright cherry note — essential in Sazeracs and Vieux Carrés. Keep both."},
+];
+
+function renderGlossary(){
+  const el=document.getElementById('glossaryPanel');if(!el)return;
+  const cats=[...new Set(TECHNIQUES.map(t=>t.cat))];
+  let html='';
+  cats.forEach(cat=>{
+    const items=TECHNIQUES.filter(t=>t.cat===cat);
+    html+=`<div style="margin-bottom:20px">
+      <div class="sh" style="margin-bottom:10px">${cat}</div>
+      ${items.map(t=>`<div style="background:rgba(18,12,4,0.7);border:1px solid rgba(196,122,42,0.15);border-radius:5px;padding:13px 14px;margin-bottom:8px">
+        <div style="font-family:'Playfair Display',serif;font-size:15px;font-style:italic;margin-bottom:6px;color:var(--accent-light)">${t.term}</div>
+        <div style="font-size:13px;line-height:1.65;color:#b8a898">${t.desc}</div>
+      </div>`).join('')}
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+
+// ── HOME SCREEN PROMPT ────────────────────────────────────────
+function dismissHomePrompt(){
+  document.getElementById('addToHomePrompt').style.display='none';
+  localStorage.setItem('sg_home_prompted','1');
+}
+
+function checkHomePrompt(){
+  try{localStorage.setItem('sg_home_prompted','1');}catch(e){}
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  // Wire up bottom nav buttons
+  document.querySelectorAll('.bnav-btn[data-page]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      showPage(btn.getAttribute('data-page'));
+    });
+  });
+  // Wire up icon buttons
+  (function(){
+    var sb=document.getElementById('surpriseBtn');
+    if(sb){
+      sb.addEventListener('touchend',function(e){e.preventDefault();surprise();},{passive:false});
+      sb.addEventListener('click',function(e){e.preventDefault();surprise();});
+    }
+  })();
+  // Init — run after DOM is fully ready
+  renderDiscover();
+  checkHomePrompt();
+});
+</script>
+
+<div id="addToHomePrompt" style="display:none;position:fixed;bottom:90px;left:12px;right:12px;background:rgba(18,12,4,0.97);border:1px solid rgba(196,122,42,0.4);border-radius:8px;padding:14px 16px;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.6)">
+  <button onclick="dismissHomePrompt()" style="position:absolute;top:10px;right:12px;background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer">✕</button>
+  <div style="font-size:9px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:6px">Add to Home Screen</div>
+  <div style="font-size:13px;color:var(--text);line-height:1.5;margin-bottom:10px">Tap <strong style="color:var(--accent-light)">Share</strong> then <strong style="color:var(--accent-light)">Add to Home Screen</strong> to use Spirit Guide like a real app — full screen, no browser bar.</div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <div style="font-size:22px">⬆️</div>
+    <div style="font-size:11px;color:var(--muted)">Safari → Share button → Add to Home Screen</div>
+  </div>
+</div>
+
+</body>
+</html>
